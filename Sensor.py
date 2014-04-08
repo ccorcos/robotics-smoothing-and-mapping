@@ -32,9 +32,16 @@ class LaserSensorSim:
             d = norm(lm - xy)  # distance to the landmark
 
             # angle to the landmark relative to a
-            t = arccos(dot(lm - xy, [cos(a), sin(a)]) / d)
+            # t = arccos(dot(lm - xy, [cos(a), sin(a)]) / d)
+            # t = arcsin(cross(lm - xy, [cos(a), sin(a)]) / d)
 
-            if d < self.maxDistance and abs(t) < self.maxAngle:
+            c = np.array(lm - xy)
+            b = np.array([cos(a), sin(a)])
+
+            # sign(sintheta)*acos(costheta)
+            t = -sign(cross(c, b) / d) * arccos(dot(c, b) / d)
+
+            if d < self.maxDistance and abs(t) <= self.maxAngle:
                 if ideal:
                     sensed.append({'which': i, "where": lm})
                 else:
@@ -45,4 +52,6 @@ class LaserSensorSim:
                         np.array([cos(a + t + angleNoise),
                                   sin(a + t + angleNoise)]) \
                         * (d + distanceNoise)
-                    return sensed.append({'which': i, "where": senseXY})
+                    sensed.append({'which': i, "where": list(senseXY)})
+
+        return sensed

@@ -48,12 +48,12 @@ class Robot:
         self.state.append(newState)
 
     # tell the simulator where the robot is with noise
-    def moveSim(self, pos, command):
+    def simMove(self, pos, command):
+        self.move(command)
         return self.motionModel(pos, command, self.motionNoise)
 
-    # simulate sensing
-    def simSense(self, simMap):
-        pos = self.state[-1].pos
+    # simulate sensing. gets its real position
+    def simSense(self, simMap, pos):
         obs = {}
         for sensor in self.sensors:
             obs[sensor.type] = sensor.simSense(
@@ -66,54 +66,15 @@ class Robot:
             traj.append(s.pos)
         return np.array(traj)[:, 0:2]  # hack off the angle
 
-    #
-    #
-    #
-    #
-    #
-    #
+    def reset(self):
+        initState = self.state[0]
+        initState.obs = []
+        self.state = [initState]
 
-    def realTrajectory(self):
-        traj = []
-        for state in self.realState:
-            traj.append(state.pos)
-        return np.array(traj)[:, 0:2]  # hack off the angle
-
-    def drawReadTrajectory(self):
-        traj = self.realTrajectory()
-        plt.plot(traj[:, 0], traj[:, 1], color="green")
-
-    def idealTrajectory(self):
-        traj = []
-        for state in self.idealState:
-            traj.append(state.pos)
-        return np.array(traj)[:, 0:2]  # hack off the angle
-
-    def drawIdealTrajectory(self, ax):
-        traj = self.idealTrajectory()
-        ax.plot(traj[:, 0], traj[:, 1], color="green")
-
-    def drawRealPosition(self):
-        # draw a triangle oriented appropriately
-        state = self.realState[-1]
-        plt.scatter(state.pos[0], state.pos[1], s=50, marker="o", color="blue")
-        a = state.pos[2]
-        head = np.array([cos(a), sin(a)]) * 0.2
-        start = np.array(state.pos[0:2])
-        end = start + head
-        pts = np.array([start, end])
-        plt.plot(pts[:, 0], pts[:, 1], color="blue")
-
-    def drawIdealPosition(self, ax):
-        # draw a triangle oriented appropriately
-        state = self.idealState[-1]
-        ax.scatter(state.pos[0], state.pos[1], s=50, marker="o", color="red")
-        a = state.pos[2]
-        head = np.array([cos(a), sin(a)]) * 0.2
-        start = np.array(state.pos[0:2])
-        end = start + head
-        pts = np.array([start, end])
-        ax.plot(pts[:, 0], pts[:, 1], color="red")
+    def sensorOfType(self, s):
+        for sensor in self.sensors:
+            if sensor.type == s:
+                return sensor
 
     def drawIdealObs(self, fig):
         # draw a triangle oriented appropriately

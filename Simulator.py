@@ -18,11 +18,13 @@ class Simulator:
         commands = []  # forward and turn
 
         robot = self.robots[0]
-        # pos = self.state[0][0].pos
+        robot.reset()
+        robot.simSense(self.map, robot.state[-1].pos)
 
         self.plot.start("Record Trajectory")
         self.plot.drawMap(self.map)
         self.plot.drawRobotTrajectories([robot])
+        self.plot.drawRobotObservations([robot])
         self.plot.drawRobots([robot])
         self.plot.draw()
 
@@ -60,12 +62,16 @@ class Simulator:
                     self.terminal.clearUpTo(2)
                     break
 
+            robot.simSense(self.map, robot.state[-1].pos)
+
             self.plot.clear()
             self.plot.drawMap(self.map)
             self.plot.drawRobotTrajectories([robot])
+            self.plot.drawRobotObservations([robot])
             self.plot.drawRobots([robot])
             self.plot.draw()
 
+        self.plot.clear()
         self.plot.stop("Record Trajectory")
         self.terminal.clearUpTo(2)
         self.terminal.echo()
@@ -98,12 +104,13 @@ class Simulator:
             return False
 
         robot = self.robots[0]
+        robot.reset()
+        robot.simSense(self.map, robot.state[-1].pos)
 
-        # r.sense(m.landmarks)
-        # r.drawIdealObs(fig)
         self.plot.start("Step Through Trajectory")
         self.plot.drawMap(self.map)
         self.plot.drawRobotTrajectories([robot])
+        self.plot.drawRobotObservations([robot])
         self.plot.drawRobots([robot])
         self.plot.draw()
 
@@ -115,15 +122,16 @@ class Simulator:
             key = self.terminal.keyPress()
 
             robot.move(step)
+            robot.simSense(self.map, robot.state[-1].pos)
 
-            # r.sense(m.landmarks)
-            # r.drawIdealObs(fig)
             self.plot.clear()
             self.plot.drawMap(self.map)
             self.plot.drawRobotTrajectories([robot])
+            self.plot.drawRobotObservations([robot])
             self.plot.drawRobots([robot])
             self.plot.draw()
 
+        self.plot.clear()
         self.plot.stop("Step Through Trajectory")
         self.terminal.clearUpTo(2)
         self.terminal.echo()
@@ -134,3 +142,47 @@ class Simulator:
             return pickle.load(open("trajectories/" + name + ".p", "rb"))
         else:
             return False
+
+    def stepThroughRealTrajectory(self, trajName):
+        traj = self.loadTrajectory(trajName)
+
+        if not traj:
+            return False
+
+        robot = self.robots[0]
+        robot.reset()
+
+        pos = [robot.state[0].pos]
+        robot.simSense(self.map, pos[-1])
+
+        self.plot.start("Step Through Trajectory")
+        self.plot.drawMap(self.map)
+        self.plot.drawRobotTrajectories([robot])
+        self.plot.drawTrajectory(pos, "green")
+        self.plot.drawRobotObservations([robot])
+        self.plot.drawRobots([robot])
+        self.plot.draw()
+
+        self.terminal.clearUpTo(2)
+        self.terminal.println("Press any key to step...")
+        self.terminal.noecho()
+
+        for step in traj:
+            key = self.terminal.keyPress()
+
+            pos.append(robot.simMove(pos[-1], step))
+            robot.simSense(self.map, pos[-1])
+
+            self.plot.clear()
+            self.plot.drawMap(self.map)
+            self.plot.drawRobotTrajectories([robot])
+            self.plot.drawRobotObservations([robot])
+            self.plot.drawTrajectory(pos, "green")
+            self.plot.drawRobots([robot])
+            self.plot.draw()
+
+        self.plot.clear()
+        self.plot.stop("Step Through Trajectory")
+        self.terminal.clearUpTo(2)
+        self.terminal.echo()
+        return True

@@ -34,8 +34,9 @@ sensorOptions = {
     'type': '1',
     'maxDistance': 1,
     'maxAngle': pi,
-    'distanceNoise': 0.05,
-    'angleNoise': 0.01
+    'distanceNoise': 0.01,  # 1 cm stdev => within 4cm 95% of the time
+    # 5 degrees stdev => within 20 degrees 95% of the time
+    'angleNoise': 5 * pi / 180
 }
 
 s = LaserSensorSim(sensorOptions)
@@ -80,6 +81,12 @@ def main():
         while not traj:
             trajName = terminal.queryForString("which trajectory:")
             traj = sim.stepThroughOneTrajectory(trajName)
+
+    if terminal.yesno("Would you like to step through a real trajectory?"):
+        traj = False
+        while not traj:
+            trajName = terminal.queryForString("which trajectory:")
+            traj = sim.stepThroughRealTrajectory(trajName)
 
 
 if __name__ == "__main__":
