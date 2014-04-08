@@ -17,7 +17,7 @@ class LaserSensorSim:
         self.angleNoise = options["angleNoise"]
 
     # simulate sensing
-    def simSense(self, pos, landmarks, ideal=False):
+    def simSense(self, pos, landmarks):
 
         x = pos[0]
         y = pos[1]
@@ -42,16 +42,14 @@ class LaserSensorSim:
             t = -sign(cross(c, b) / d) * arccos(dot(c, b) / d)
 
             if d < self.maxDistance and abs(t) <= self.maxAngle:
-                if ideal:
-                    sensed.append({'which': i, "where": lm})
-                else:
-                    angleNoise = gauss(0, self.angleNoise)
-                    distanceNoise = gauss(0, self.distanceNoise)
+                angleNoise = gauss(0, self.angleNoise)
+                distanceNoise = gauss(0, self.distanceNoise)
 
-                    senseXY = xy + \
-                        np.array([cos(a + t + angleNoise),
-                                  sin(a + t + angleNoise)]) \
-                        * (d + distanceNoise)
-                    sensed.append({'which': i, "where": list(senseXY)})
+                # senseXY = xy + \
+                #     np.array([cos(a + t + angleNoise),
+                #               sin(a + t + angleNoise)]) \
+                #     * (d + distanceNoise)
+                sensed.append(
+                    {'which': i, "where": list([(d + distanceNoise), (t + angleNoise)])})
 
         return sensed

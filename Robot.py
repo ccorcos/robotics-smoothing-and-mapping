@@ -56,8 +56,8 @@ class Robot:
     def simSense(self, simMap, pos):
         obs = {}
         for sensor in self.sensors:
-            obs[sensor.type] = sensor.simSense(
-                pos, simMap.landmarks[sensor.type])
+            obs[sensor.type] = sensor.simSense(pos,
+                                               simMap.landmarks[sensor.type])
         self.state[-1].obs = obs
 
     def trajectory(self):

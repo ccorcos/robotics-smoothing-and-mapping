@@ -23,9 +23,9 @@ class Simulator:
 
         self.plot.start("Record Trajectory")
         self.plot.drawMap(self.map)
-        self.plot.drawRobotTrajectories([robot])
-        self.plot.drawRobotObservations([robot])
-        self.plot.drawRobots([robot])
+        self.plot.drawRobotTrajectory(robot, "blue")
+        self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
+        self.plot.drawRobot(robot.state[-1].pos, "blue")
         self.plot.draw()
 
         self.terminal.clearUpTo(2)
@@ -66,9 +66,9 @@ class Simulator:
 
             self.plot.clear()
             self.plot.drawMap(self.map)
-            self.plot.drawRobotTrajectories([robot])
-            self.plot.drawRobotObservations([robot])
-            self.plot.drawRobots([robot])
+            self.plot.drawRobotTrajectory(robot, "blue")
+            self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
+            self.plot.drawRobot(robot.state[-1].pos, "blue")
             self.plot.draw()
 
         self.plot.clear()
@@ -109,9 +109,9 @@ class Simulator:
 
         self.plot.start("Step Through Trajectory")
         self.plot.drawMap(self.map)
-        self.plot.drawRobotTrajectories([robot])
-        self.plot.drawRobotObservations([robot])
-        self.plot.drawRobots([robot])
+        self.plot.drawRobotTrajectory(robot, "blue")
+        self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
+        self.plot.drawRobot(robot.state[-1].pos, "blue")
         self.plot.draw()
 
         self.terminal.clearUpTo(2)
@@ -126,9 +126,9 @@ class Simulator:
 
             self.plot.clear()
             self.plot.drawMap(self.map)
-            self.plot.drawRobotTrajectories([robot])
-            self.plot.drawRobotObservations([robot])
-            self.plot.drawRobots([robot])
+            self.plot.drawRobotTrajectory(robot, "blue")
+            self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
+            self.plot.drawRobot(robot.state[-1].pos, "blue")
             self.plot.draw()
 
         self.plot.clear()
@@ -157,10 +157,12 @@ class Simulator:
 
         self.plot.start("Step Through Trajectory")
         self.plot.drawMap(self.map)
-        self.plot.drawRobotTrajectories([robot])
+        self.plot.drawRobotTrajectory(robot, "blue")
+        self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
+        self.plot.drawRobot(robot.state[-1].pos, "blue")
         self.plot.drawTrajectory(pos, "green")
-        self.plot.drawRobotObservations([robot])
-        self.plot.drawRobots([robot])
+        self.plot.drawRobotObservation(robot, pos[-1], "green")
+        self.plot.drawRobot(pos[-1], "green")
         self.plot.draw()
 
         self.terminal.clearUpTo(2)
@@ -175,10 +177,12 @@ class Simulator:
 
             self.plot.clear()
             self.plot.drawMap(self.map)
-            self.plot.drawRobotTrajectories([robot])
-            self.plot.drawRobotObservations([robot])
+            self.plot.drawRobotTrajectory(robot, "blue")
+            self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
+            self.plot.drawRobot(robot.state[-1].pos, "blue")
             self.plot.drawTrajectory(pos, "green")
-            self.plot.drawRobots([robot])
+            self.plot.drawRobotObservation(robot, pos[-1], "green")
+            self.plot.drawRobot(pos[-1], "green")
             self.plot.draw()
 
         self.plot.clear()

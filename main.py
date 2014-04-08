@@ -44,7 +44,7 @@ s = LaserSensorSim(sensorOptions)
 robotOptions = {
     'motionModel': unicycleModel,
     'initialPosition': [5, 5, 0],  # x, y, angle
-    'motionNoise': [0.01, pi / 180.0 / 2.0],  # forward, turn
+    'motionNoise': [0.01, 1 * pi / 180],  # forward, turn
     'sensors': [s]
 }
 
