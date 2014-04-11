@@ -19,13 +19,21 @@ class Simulator:
 
         robot = self.robots[0]
         robot.reset()
-        robot.simSense(self.map, robot.state[-1].pos)
+        robot.simSense(self.map, robot.state[-1]['pos'])
 
         self.plot.start("Record Trajectory")
-        self.plot.drawMap(self.map)
+
+        self.plot.drawMap(self.map,
+                          {"type1": {'color': 'blue',
+                                     'marker': 'x',
+                                     'scale': 10}})
+
         self.plot.drawRobotTrajectory(robot, "blue")
-        self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
-        self.plot.drawRobot(robot.state[-1].pos, "blue")
+
+        self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
+                                       {"type1": 'blue'})
+
+        self.plot.drawRobot(robot.state[-1]['pos'], "blue")
         self.plot.draw()
 
         self.terminal.clearUpTo(2)
@@ -62,13 +70,21 @@ class Simulator:
                     self.terminal.clearUpTo(2)
                     break
 
-            robot.simSense(self.map, robot.state[-1].pos)
+            robot.simSense(self.map, robot.state[-1]['pos'])
 
             self.plot.clear()
-            self.plot.drawMap(self.map)
+
+            self.plot.drawMap(self.map,
+                              {"type1": {'color': 'blue',
+                                         'marker': 'x',
+                                         'scale': 10}})
+
             self.plot.drawRobotTrajectory(robot, "blue")
-            self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
-            self.plot.drawRobot(robot.state[-1].pos, "blue")
+
+            self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
+                                           {"type1": 'blue'})
+
+            self.plot.drawRobot(robot.state[-1]['pos'], "blue")
             self.plot.draw()
 
         self.plot.clear()
@@ -105,13 +121,20 @@ class Simulator:
 
         robot = self.robots[0]
         robot.reset()
-        robot.simSense(self.map, robot.state[-1].pos)
+        robot.simSense(self.map, robot.state[-1]['pos'])
 
         self.plot.start("Step Through Trajectory")
-        self.plot.drawMap(self.map)
+        self.plot.drawMap(self.map,
+                          {"type1": {'color': 'blue',
+                                     'marker': 'x',
+                                     'scale': 10}})
+
         self.plot.drawRobotTrajectory(robot, "blue")
-        self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
-        self.plot.drawRobot(robot.state[-1].pos, "blue")
+
+        self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
+                                       {"type1": 'blue'})
+
+        self.plot.drawRobot(robot.state[-1]['pos'], "blue")
         self.plot.draw()
 
         self.terminal.clearUpTo(2)
@@ -122,13 +145,21 @@ class Simulator:
             key = self.terminal.keyPress()
 
             robot.move(step)
-            robot.simSense(self.map, robot.state[-1].pos)
+            robot.simSense(self.map, robot.state[-1]['pos'])
 
             self.plot.clear()
-            self.plot.drawMap(self.map)
+            self.plot.drawMap(self.map,
+                              {"type1": {'color': 'blue',
+                                         'marker': 'x',
+                                         'scale': 10}})
+
             self.plot.drawRobotTrajectory(robot, "blue")
-            self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
-            self.plot.drawRobot(robot.state[-1].pos, "blue")
+
+            self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
+                                           {"type1": 'blue'})
+
+            self.plot.drawRobot(robot.state[-1]['pos'], "blue")
+            self.plot.draw()
             self.plot.draw()
 
         self.plot.clear()
@@ -152,17 +183,39 @@ class Simulator:
         robot = self.robots[0]
         robot.reset()
 
-        pos = [robot.state[0].pos]
+        pos = [robot.state[0]['pos']]
         robot.simSense(self.map, pos[-1])
 
         self.plot.start("Step Through Trajectory")
-        self.plot.drawMap(self.map)
+
+        # the map
+        self.plot.drawMap(self.map,
+                          {"type1": {'color': 'blue',
+                                     'marker': 'x',
+                                     'scale': 10}})
+
+        # where the robot thinks it has been
         self.plot.drawRobotTrajectory(robot, "blue")
-        self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
-        self.plot.drawRobot(robot.state[-1].pos, "blue")
-        self.plot.drawTrajectory(pos, "green")
-        self.plot.drawRobotObservation(robot, pos[-1], "green")
-        self.plot.drawRobot(pos[-1], "green")
+
+        # what the robot thinks it is seeing
+        self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
+                                       {"type1": 'blue'})
+
+        # where the robot thinks it is
+        self.plot.drawRobot(robot.state[-1]['pos'], "blue")
+
+        # where the robot thinks the landmarks are
+        self.plot.drawRobotMap(robot,
+                               {"type1": {'color': 'red',
+                                          'marker': 'x',
+                                          'scale': 10}})
+
+        # where the robot really is
+        self.plot.drawTrajectory(pos, "red")
+        # what the robot is actually seeing
+        self.plot.drawRobotObservation(robot, pos[-1], {"type1": "red"})
+        # where the robot really us
+        self.plot.drawRobot(pos[-1], "red")
         self.plot.draw()
 
         self.terminal.clearUpTo(2)
@@ -176,13 +229,34 @@ class Simulator:
             robot.simSense(self.map, pos[-1])
 
             self.plot.clear()
-            self.plot.drawMap(self.map)
+            # the map
+            self.plot.drawMap(self.map,
+                              {"type1": {'color': 'blue',
+                                         'marker': 'x',
+                                         'scale': 10}})
+
+            # where the robot thinks it has been
             self.plot.drawRobotTrajectory(robot, "blue")
-            self.plot.drawRobotObservation(robot, robot.state[-1].pos, "blue")
-            self.plot.drawRobot(robot.state[-1].pos, "blue")
-            self.plot.drawTrajectory(pos, "green")
-            self.plot.drawRobotObservation(robot, pos[-1], "green")
-            self.plot.drawRobot(pos[-1], "green")
+
+            # what the robot thinks it is seeing
+            self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
+                                           {"type1": 'blue'})
+
+            # where the robot thinks it is
+            self.plot.drawRobot(robot.state[-1]['pos'], "blue")
+
+            # where the robot thinks the landmarks are
+            self.plot.drawRobotMap(robot,
+                                   {"type1": {'color': 'red',
+                                              'marker': 'x',
+                                              'scale': 10}})
+
+            # where the robot really is
+            self.plot.drawTrajectory(pos, "red")
+            # what the robot is actually seeing
+            self.plot.drawRobotObservation(robot, pos[-1], {"type1": "red"})
+            # where the robot really us
+            self.plot.drawRobot(pos[-1], "red")
             self.plot.draw()
 
         self.plot.clear()

@@ -33,14 +33,14 @@ from Map import *
 
 mapOptions = {
     "scale": 10,
-    "landmarkTypes": [{"type": '1',
-                       "n": 200}]
+    "landmarkTypes": [{"type": 'type1',
+                       "n": 200}],
 }
 
 m = Map(mapOptions)
 
 sensorOptions = {
-    'type': '1',
+    'type': 'type1',
     'maxDistance': 1,
     'maxAngle': pi,
     'noise': [0.01, 5 * pi / 180]  # distance, angle

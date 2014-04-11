@@ -3,6 +3,14 @@ from random import gauss
 
 # simulated laser range sensor
 
+# obs = [
+#   {
+#       'map index': 1,
+#       'sensor pos': [d,t],
+#       'type': "1"
+#   }
+# ]
+
 
 class LaserSensorSim:
 
@@ -16,14 +24,18 @@ class LaserSensorSim:
         self.noise = options['noise']  # distance, angle
 
     # simulate sensing
-    def simSense(self, pos, landmarks):
+    def simSense(self, pos, simMap):
+        landmarks = simMap.landmarks
 
         sensed = []
         for i in range(len(landmarks)):
             landmark = landmarks[i]  # landmark i
-            o = self.obs(pos, landmark, noise=True)
-            if o:
-                sensed.append({'which': i, 'where': o})
+            if landmark['type'] == self.type:
+                o = self.obs(pos, landmark['pos'], noise=True)
+                if o:
+                    sensed.append({'map index': i,
+                                   'sensor pos': o,
+                                   'type': self.type})
 
         return sensed
 

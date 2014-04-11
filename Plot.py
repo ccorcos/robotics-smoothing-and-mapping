@@ -29,38 +29,34 @@ class Plot:
         plt.ioff()
         plt.close(name)
 
-    def drawMap(self, m):
-        color = self.get_color(len(m.landmarkTypes))
-        for lmType in m.landmarkTypes:
-            acolor = next(color)
-            self.ax.scatter(
-                m.landmarks[lmType][:, 0],
-                m.landmarks[lmType][:, 1],
-                color=acolor,
-                marker="x")
+    def drawMap(self, simMap, types):
+        for key in simMap.plotLandmarks:
+            lms = np.array(simMap.plotLandmarks[key])
+            self.ax.scatter(lms[:, 0],
+                            lms[:, 1],
+                            color=types[key]["color"],
+                            marker=types[key]["marker"],
+                            s=types[key]["scale"])
 
-    def get_color(self, colors, idx=0):
-        for hue in range(colors):
-            hue = 1. * hue / colors
-            col = [int(x) for x in colorsys.hsv_to_rgb(hue, 1.0, 230)]
-            if idx == 0:
-                yield "#{0:02x}{1:02x}{2:02x}".format(*col)
-            elif idx == 1:
-                yield "#{2:02x}{1:02x}{0:02x}".format(*col)
-            elif idx == 2:
-                yield "#{1:02x}{0:02x}{2:02x}".format(*col)
-            else:  # idx == 3
-                yield "#{2:02x}{0:02x}{1:02x}".format(*col)
+        # for l in simMap.landmarks:
+        #     self.ax.scatter(l['pos'][0],
+        #                     l['pos'][1],
+        #                     color=types[l["type"]]["color"],
+        #                     marker=types[l["type"]]["marker"],
+        #                     s=types[l["type"]]["scale"])
+
+    def drawRobotMap(self, robot, types):
+        for key in robot.plotLandmarks:
+            lms = np.array(robot.plotLandmarks[key])
+            self.ax.scatter(lms[:, 0],
+                            lms[:, 1],
+                            color=types[key]["color"],
+                            marker=types[key]["marker"],
+                            s=types[key]["scale"])
 
     def drawRobotTrajectory(self, robot, color):
-        # color = self.get_color(len(robots), idx=1)
-        # for robot in robots:
-            # acolor = next(color)
-        traj = robot.trajectory()
+        traj = robot.trajectoryXY()
         self.drawTrajectory(traj, color)
-            # self.ax.plot(traj[:, 0],
-            #              traj[:, 1],
-            #              color=acolor)
 
     def drawTrajectory(self, traj, color):
         traj = np.array(traj)
@@ -68,49 +64,37 @@ class Plot:
                      traj[:, 1],
                      color=color)
 
-    def drawRobotObservation(self, robot, pos, color):
-        sensorTypes = []
-        for sensor in robot.sensors:
-            sensorTypes.append(sensor.type)
-
-        sensorTypes = list(set(sensorTypes))
-
+    def drawRobotObservation(self, robot, pos, colors):
         st = robot.state[-1]
-        # color = self.get_color(len(sensorTypes), idx=2)
-        for sense in sensorTypes:
-            # acolor = next(color)
-            if sense in st.obs:
-                sensor = robot.sensorOfType(sense)
-                for ob in st.obs[sense]:
-                    xy = np.array(pos[0:2])
-                    a = np.array(pos[2])
-                    d = ob["where"][0]
-                    t = ob["where"][1]
-                    # lm = np.array(ob["where"])
 
-                    lm = np.array([d * cos(a + t), d * sin(a + t)])
+        xy = np.array(pos[0:2])
+        a = np.array(pos[2])
+        for ob in st['obs']:
+            d = ob["sensor pos"][0]
+            t = ob["sensor pos"][1]
 
-                    arrow = np.array([xy, xy + lm])
-                    self.ax.plot(arrow[:, 0],
-                                 arrow[:, 1],
-                                 color=color)
+            lm = np.array([d * cos(a + t), d * sin(a + t)])
 
-                    distErr = sensor.noise[0] * 4
-                    angleErr = d * sensor.noise[1] * 4
+            arrow = np.array([xy, xy + lm])
 
-                    e = Ellipse(xy=xy + lm,
-                                width=distErr,
-                                height=angleErr,
-                                angle=t * 180 / pi,
-                                alpha=0.5,
-                                color=color)
-                    self.ax.add_artist(e)
+            self.ax.plot(arrow[:, 0],
+                         arrow[:, 1],
+                         color=colors[ob["type"]])
+
+            sensor = robot.sensorOfType(ob["type"])
+
+            distErr = sensor.noise[0] * 4
+            angleErr = d * sensor.noise[1] * 4
+
+            e = Ellipse(xy=xy + lm,
+                        width=distErr,
+                        height=angleErr,
+                        angle=t * 180 / pi,
+                        alpha=0.5,
+                        color=colors[ob["type"]])
+            self.ax.add_artist(e)
 
     def drawRobot(self, pos, color):
-        # color = self.get_color(len(robots), idx=1)
-        # for robot in robots:
-            # acolor = next(color)
-        # state = robot.state[-1]
         self.ax.scatter(pos[0],
                         pos[1],
                         s=50,
