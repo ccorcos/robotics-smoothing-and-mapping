@@ -13,43 +13,44 @@ class LaserSensorSim:
         self.maxDistance = options["maxDistance"]
         self.maxAngle = options["maxAngle"]
 
-        self.distanceNoise = options["distanceNoise"]
-        self.angleNoise = options["angleNoise"]
+        self.noise = options['noise']  # distance, angle
 
     # simulate sensing
     def simSense(self, pos, landmarks):
+
+        sensed = []
+        for i in range(len(landmarks)):
+            landmark = landmarks[i]  # landmark i
+            o = self.obs(pos, landmark, noise=True)
+            if o:
+                sensed.append({'which': i, 'where': o})
+
+        return sensed
+
+    def obs(self, pos, landmark, noise=False):
 
         x = pos[0]
         y = pos[1]
         a = pos[2]
         xy = np.array([x, y])
 
-        sensed = []
+        d = norm(landmark - xy)  # distance to the landmark
 
-        for i in range(len(landmarks)):
+        c = np.array(landmark - xy)
+        b = np.array([cos(a), sin(a)])
 
-            lm = landmarks[i]  # landmark i
-            d = norm(lm - xy)  # distance to the landmark
+        # sign(sintheta)*acos(costheta)
+        t = -sign(cross(c, b) / d) * arccos(dot(c, b) / d)
 
-            # angle to the landmark relative to a
-            # t = arccos(dot(lm - xy, [cos(a), sin(a)]) / d)
-            # t = arcsin(cross(lm - xy, [cos(a), sin(a)]) / d)
+        if d < self.maxDistance and abs(t) <= self.maxAngle:
+            if noise:
+                distanceNoise = gauss(0, self.noise[0])
+                angleNoise = gauss(0, self.noise[1])
+                return [(d + distanceNoise), (t + angleNoise)]
+            else:
+                return [d, t]
+        else:
+            return None
 
-            c = np.array(lm - xy)
-            b = np.array([cos(a), sin(a)])
-
-            # sign(sintheta)*acos(costheta)
-            t = -sign(cross(c, b) / d) * arccos(dot(c, b) / d)
-
-            if d < self.maxDistance and abs(t) <= self.maxAngle:
-                angleNoise = gauss(0, self.angleNoise)
-                distanceNoise = gauss(0, self.distanceNoise)
-
-                # senseXY = xy + \
-                #     np.array([cos(a + t + angleNoise),
-                #               sin(a + t + angleNoise)]) \
-                #     * (d + distanceNoise)
-                sensed.append(
-                    {'which': i, "where": list([(d + distanceNoise), (t + angleNoise)])})
-
-        return sensed
+    def jacobian():
+        pass

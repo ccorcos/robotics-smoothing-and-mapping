@@ -1,12 +1,12 @@
 
 # todo
-# plot ellipses, size and angle
-# plot real vs ideal
-# unify measurements and error, etc. Clean up! Python Packages!
-# modularize
+# action model and observation model function, linearizaion, and jacobian
+#
 # SAM
 # iSAM
+#
 # python package
+#
 # multirobot
 # multisensor
 # decentralized?
@@ -27,28 +27,9 @@ from random import gauss
 
 from Simulator import *
 from Sensor import *
+from Motion import *
 from Robot import *
 from Map import *
-
-sensorOptions = {
-    'type': '1',
-    'maxDistance': 1,
-    'maxAngle': pi,
-    'distanceNoise': 0.01,  # 1 cm stdev => within 4cm 95% of the time
-    # 5 degrees stdev => within 20 degrees 95% of the time
-    'angleNoise': 5 * pi / 180
-}
-
-s = LaserSensorSim(sensorOptions)
-
-robotOptions = {
-    'motionModel': unicycleModel,
-    'initialPosition': [5, 5, 0],  # x, y, angle
-    'motionNoise': [0.01, 1 * pi / 180],  # forward, turn
-    'sensors': [s]
-}
-
-r = Robot(robotOptions)
 
 mapOptions = {
     "scale": 10,
@@ -57,6 +38,31 @@ mapOptions = {
 }
 
 m = Map(mapOptions)
+
+sensorOptions = {
+    'type': '1',
+    'maxDistance': 1,
+    'maxAngle': pi,
+    'noise': [0.01, 5 * pi / 180]  # distance, angle
+    # 1 cm stdev => within 4cm 95% of the time
+    # 5 degrees stdev => within 20 degrees 95% of the time
+}
+
+s = LaserSensorSim(sensorOptions)
+
+motionOptions = {
+    'noise': [0.01, 1 * pi / 180],  # forward, turn
+}
+
+u = UnicycleModel(motionOptions)
+
+robotOptions = {
+    'motionModel': u,
+    'sensors': [s],
+    'initialPosition': [5, 5, 0]  # x, y, angle
+}
+
+r = Robot(robotOptions)
 
 
 simulatorOptions = {
@@ -76,7 +82,7 @@ def main():
     if terminal.yesno("Would you to record a trajectory?"):
         sim.recordTrajectory()
 
-    if terminal.yesno("Would you like to step through a trajectory?"):
+    if terminal.yesno("Would you like to step through an ideal trajectory?"):
         traj = False
         while not traj:
             trajName = terminal.queryForString("which trajectory:")

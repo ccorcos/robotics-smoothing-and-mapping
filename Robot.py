@@ -2,29 +2,15 @@ from pylab import *
 from random import gauss
 
 
-def unicycleModel(pos, command, noise=[0, 0]):
-    x = pos[0]
-    y = pos[1]
-    a = pos[2]
-
-    forward = command[0]
-    turn = command[1]
-
-    forwardNoise = gauss(0, noise[0])
-    turnNoise = gauss(0, noise[1])
-
-    a = a + (turn + turnNoise)
-    x = x + cos(a) * (forward + forwardNoise)
-    y = y + sin(a) * (forward + forwardNoise)
-    return [x, y, a]
-
-
 class RobotState:
     # keep track of which position and observations.
 
     def __init__(self, pos, obs):
         self.pos = pos
         self.obs = obs
+
+    def command(self, cmd):
+        self.cmd = cmd
 
 
 class Robot:
@@ -34,25 +20,27 @@ class Robot:
         # initial x, y, angle
         initialState = RobotState(options['initialPosition'], [])
 
+        self.sensors = options['sensors']
         self.motionModel = options['motionModel']
         self.state = [initialState]
-        self.motionNoise = options['motionNoise']
-
-        self.sensors = options['sensors']
 
     # move the robot
-    def move(self, command):
+    def move(self, cmd):
+        self.state[-1].command(cmd)  # keep track of the commands
         pos = self.state[-1].pos
-        newpos = self.motionModel(pos, command)
+
+        newpos = self.motionModel.move(pos, cmd)
         newState = RobotState(newpos, [])
         self.state.append(newState)
 
     # tell the simulator where the robot is with noise
-    def simMove(self, pos, command):
-        self.move(command)
-        return self.motionModel(pos, command, self.motionNoise)
+    def simMove(self, pos, cmd):
+        # move the robot as per usual, but tell the simulator where the robot
+        # really is due to noise accumulation, etc.
+        self.move(cmd)
+        return self.motionModel.move(pos, cmd, noise=True)
 
-    # simulate sensing. gets its real position
+    # simulate sensing. based on the real position.
     def simSense(self, simMap, pos):
         obs = {}
         for sensor in self.sensors:
@@ -69,27 +57,10 @@ class Robot:
     def reset(self):
         initState = self.state[0]
         initState.obs = []
+        initState.cmd = None
         self.state = [initState]
 
     def sensorOfType(self, s):
         for sensor in self.sensors:
             if sensor.type == s:
                 return sensor
-
-    def drawIdealObs(self, fig):
-        # draw a triangle oriented appropriately
-        state = self.idealState[-1]
-        observations = np.array(state.obs)[:, 0:2]  # scape off landmark index
-        pos = np.array(state.pos)[0:2]  # scrape off angle
-
-        # draw an ellipse oriented correctly with appropriate size
-        for obs in observations:
-            # perpendicular error depends on distance, draw 2 stdevs
-            d = norm(pos - obs)
-            angleErr = d * self.senseAngleNoise * 2
-            distErr = self.senseDistanceNoise * 2
-
-            # get angle
-            ang = dot(pos - obs, [1, 0]) / d
-            fig.gca().add_artist(
-                Ellipse(xy=tuple(obs), width=distErr, height=angleErr, angle=ang, color="green", alpha=0.5))

@@ -95,9 +95,8 @@ class Plot:
                                  arrow[:, 1],
                                  color=color)
 
-                    angleErr = d * sensor.angleNoise * 4
-                    distErr = sensor.distanceNoise * 4
-                    # ang = dot(p - o, [1, 0]) / d
+                    distErr = sensor.noise[0] * 4
+                    angleErr = d * sensor.noise[1] * 4
 
                     e = Ellipse(xy=xy + lm,
                                 width=distErr,
