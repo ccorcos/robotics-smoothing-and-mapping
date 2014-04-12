@@ -104,22 +104,16 @@ class Robot:
                 return sensor
 
     def wrap(self):
-        positions = []
-        landmarks = []
-        for s in self.state:
-            positions.append(s["pos"])
-        for l in self.landmarks:
-            landmarks.append(l["pos"])
-        positions = np.array(positions)
-        landmarks = np.array(landmarks)
+        positions = np.array(pluck(self.state, "pos"))
+        landmarks = np.array(pluck(self.landmarks, "pos"))
 
         posShape = positions.shape
         posLen = positions.size
         lmShape = landmarks.shape
         lmLen = landmarks.size
 
-        X = positions.reshape((1, posLen))[
-            0].tolist() + landmarks.reshape((1, lmLen))[0].tolist()
+        X = positions.reshape((1, posLen))[0].tolist() + \
+            landmarks.reshape((1, lmLen))[0].tolist()
         return X, posShape, posLen, lmShape, lmLen
 
     def unwrap(self, X, posShape, posLen, lmShape, lmLen):
@@ -133,52 +127,65 @@ class Robot:
 
     def nonlinearSAM(self):
 
-        # we have:
-        # state["pos"] = [x,y,a]
-        #      ["cmd"] = [d,t]
-        #      ["obs"] = [{type: which:map.landmarks[type][which] where:[d,t] index: self.landmarks[i]}]
-
-        # we have to unzip the trajectory and landmarks into an array
-
         X0, posShape, posLen, lmShape, lmLen = self.wrap()
 
-        def f(self, X):
+        def f(X):
             self.unwrap(X, posShape, posLen, lmShape, lmLen)
 
-            cost = 0
-            for i in range(len(self.state)):
+            N = len(self.state)
+            cost = [0] * len(X)
+            for i in range(N):
                 thisState = self.state[i]
-                whereIThinkIAm = trajectory[i]
+                whereIThinkIAm = thisState['pos']
                 if i > 0:
                     lastState = self.state[i - 1]
                     whereIThoughtIWas = lastState["pos"]
                     lastCommand = lastState["cmd"]
-                    howIGotHere = self.motionModel.move(
+                    whereIShouldBe = self.motionModel.move(
                         whereIThoughtIWas, lastCommand)
                     thisCost = mahalanobis(
-                        howIGotHere,
+                        whereIShouldBe,
                         whereIThinkIAm,
-                        np.diag(self.motionModel.noise))
-                    cost = cost + thisCost
+                        self.motionModel.noiseCovariance(whereIThoughtIWas))
+                    cost[i] = cost[i] + thisCost
 
                 for observation in thisState["obs"]:
-                    whatIObserved = observation.where
-                    whereIThinkTheLandmarkIs = landmarks[
-                        observation.index]["pos"]
-                    theSensorUsed = self.sensorOfType(observation.type)
+                    whatISensed = observation["sensor pos"]
+                    whereIThinkTheLandmarkIs = findKV(self.landmarks,
+                                                      "map index",
+                                                      observation["map index"])["pos"]
+                    theSensorUsed = self.sensorOfType(observation["type"])
 
-                    howIObservedIt = theSensorUsed["obs"](
+                    whatIShouldHaveSensed = theSensorUsed.obsIdeal(
                         whereIThinkIAm,
                         whereIThinkTheLandmarkIs)
 
                     thisCost = mahalanobis(
-                        howIObservedIt,
-                        whereIThinkTheLandmarkIs,
-                        np.diag(theSensorUsed.noise))
-                    cost = cost + thisCost
+                        whatIShouldHaveSensed,
+                        whatISensed,
+                        theSensorUsed.noiseCovariance(whatIShouldHaveSensed))
+                    j = findKVindex(self.landmarks,
+                                    'map index',
+                                    observation["map index"])
+                    cost[N + j] = cost[N + j] + thisCost
+            return cost
 
         Xf = leastsq(f, X0)
 
 
 def mahalanobis(x, y, C):
-    return sqrt(inner(inner((x - y), pinv(C)), (x - y)))
+    # print x, y, C
+    # input("sdf")
+
+    # try:
+    d = np.array(x) - np.array(y)
+    D = pinv(np.array(C))
+    m = inner(inner(d, D), d)
+    a = sqrt(m)
+    return a
+    # except:
+    #     print x, y, C
+    # print d, D
+    #     input("sdf")
+
+    return

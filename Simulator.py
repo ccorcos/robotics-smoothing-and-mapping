@@ -264,3 +264,65 @@ class Simulator:
         self.terminal.clearUpTo(2)
         self.terminal.echo()
         return True
+
+    def runRobotThoughTrajectory(self, robot, traj):
+        robot.reset()
+        pos = [robot.state[0]['pos']]
+        robot.simSense(self.map, pos[-1])
+        for step in traj:
+            pos.append(robot.simMove(pos[-1], step))
+            robot.simSense(self.map, pos[-1])
+        return pos
+
+    def runNonlinearSAM(self, trajName):
+        traj = self.loadTrajectory(trajName)
+
+        if not traj:
+            return False
+
+        robot = self.robots[0]
+
+        realTraj = self.runRobotThoughTrajectory(robot, traj)
+
+        self.plot.start("Nonlinear SAM")
+
+        # the map
+        self.plot.drawMap(self.map,
+                          {"type1": {'color': 'blue',
+                                     'marker': 'x',
+                                     'scale': 10}})
+
+        # where the robot thinks the landmarks are
+        self.plot.drawRobotMap(robot,
+                               {"type1": {'color': 'red',
+                                          'marker': 'x',
+                                          'scale': 10}})
+
+        # where the robot thinks it has been
+        self.plot.drawRobotTrajectory(robot, "blue")
+
+        # where the robot really is
+        self.plot.drawTrajectory(realTraj, "red")
+
+        self.plot.draw()
+
+        self.terminal.waitMsg("Ready to run nonlinear SAM?")
+
+        robot.nonlinearSAM()
+
+         # where the robot thinks the landmarks are
+        self.plot.drawRobotMap(robot,
+                               {"type1": {'color': 'green',
+                                          'marker': 'x',
+                                          'scale': 10}})
+
+        # where the robot really is
+        self.plot.drawTrajectory(pos, "green")
+
+        self.plot.draw()
+        self.terminal.waitMsg("How's it look?")
+
+        self.plot.clear()
+        self.plot.stop("Step Through Trajectory")
+
+        return True

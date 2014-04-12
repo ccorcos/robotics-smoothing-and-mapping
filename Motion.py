@@ -25,3 +25,7 @@ class UnicycleModel:
 
     def jacobian(self, pos):
         pass
+
+    def noiseCovariance(self, pos):
+        a = pos[2]
+        return np.diag([self.noise[0] * cos(a), self.noise[0] * sin(a), self.noise[1]])

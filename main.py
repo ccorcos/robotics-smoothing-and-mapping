@@ -94,6 +94,12 @@ def main():
             trajName = terminal.queryForString("which trajectory:")
             traj = sim.stepThroughRealTrajectory(trajName)
 
+    if terminal.yesno("Would you like to run nonlinear SAM on a trajectory?"):
+        traj = False
+        while not traj:
+            trajName = terminal.queryForString("which trajectory:")
+            traj = sim.runNonlinearSAM(trajName)
+
 
 if __name__ == "__main__":
     terminal.start(main)

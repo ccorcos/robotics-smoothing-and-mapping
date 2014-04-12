@@ -18,3 +18,10 @@ def findKV(arr, key, val):
         if a[key] == val:
             return a
     return None
+
+
+def findKVindex(arr, key, val):
+    for i in range(len(arr)):
+        if arr[i][key] == val:
+            return i
+    return -1

@@ -64,5 +64,27 @@ class LaserSensorSim:
         else:
             return None
 
+    def obsIdeal(self, pos, landmark):
+
+        x = pos[0]
+        y = pos[1]
+        a = pos[2]
+        xy = np.array([x, y])
+
+        d = norm(landmark - xy)  # distance to the landmark
+
+        c = np.array(landmark - xy)
+        b = np.array([cos(a), sin(a)])
+
+        # sign(sintheta)*acos(costheta)
+        t = -sign(cross(c, b) / d) * arccos(dot(c, b) / d)
+
+        distanceNoise = gauss(0, self.noise[0])
+        angleNoise = gauss(0, self.noise[1])
+        return [(d + distanceNoise), (t + angleNoise)]
+
     def jacobian():
         pass
+
+    def noiseCovariance(self, obs):
+        return np.diag(self.noise)

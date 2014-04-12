@@ -107,6 +107,16 @@ class CommandLineApp:
                 self.clearUp(2)
                 break
 
+    def waitMsg(self, msg):
+        y, x = self.window.getyx()
+        self.println(msg)
+        self.println("<enter> to continue...")
+        while True:
+            key = self.window.getch()    # wait for a key press
+            if key == 27 or key == 10:  # escape to finish
+                self.clearUpTo(y)
+                break
+
     def yesno(self, a):
         self.println(str(a))
         self.reprint("[y/n]:")
