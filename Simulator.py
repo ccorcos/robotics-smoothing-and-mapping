@@ -4,6 +4,9 @@ import pickle
 
 from Plot import *
 
+from CommandLineApp import *
+from utils import *
+
 
 class Simulator:
 
@@ -11,10 +14,11 @@ class Simulator:
         self.map = options['map']
         self.robots = options['robots']
         self.plot = Plot()
-        self.terminal = options['terminal']
         self.state = [[r.state[0]] for r in self.robots]
 
     def recordTrajectory(self):
+        terminal = CommandLineApp()
+
         commands = []  # forward and turn
 
         robot = self.robots[0]
@@ -28,23 +32,23 @@ class Simulator:
                                      'marker': 'x',
                                      'scale': 10}})
 
-        self.plot.drawRobotTrajectory(robot, "blue")
+        self.plot.drawRobotTrajectory(robot, "red")
 
         self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
-                                       {"type1": 'blue'})
+                                       {"type1": 'red'})
 
-        self.plot.drawRobot(robot.state[-1]['pos'], "blue")
+        self.plot.drawRobot(robot.state[-1]['pos'], "red")
         self.plot.draw()
 
-        self.terminal.clearUpTo(2)
-        self.terminal.println("Use a-s-d-w to navigate...")
-        self.terminal.noecho()
+        terminal.clearUpTo(2)
+        terminal.println("Use a-s-d-w to navigate...")
+        terminal.noecho()
 
         dAngle = 5.0 * pi / 180.0
         dForward = 0.1
 
         while True:
-            key = self.terminal.keyPress()
+            key = terminal.keyPress()
 
             if key == 100:
                 # right
@@ -66,8 +70,8 @@ class Simulator:
                 robot.move([-dForward, 0])
                 commands.append([-dForward, 0])
             else:
-                if self.terminal.yesno("Done?"):
-                    self.terminal.clearUpTo(2)
+                if terminal.yesno("Done?"):
+                    terminal.clearUpTo(2)
                     break
 
             robot.simSense(self.map, robot.state[-1]['pos'])
@@ -79,18 +83,19 @@ class Simulator:
                                          'marker': 'x',
                                          'scale': 10}})
 
-            self.plot.drawRobotTrajectory(robot, "blue")
+            self.plot.drawRobotTrajectory(robot, "red")
 
             self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
-                                           {"type1": 'blue'})
+                                           {"type1": 'red'})
 
-            self.plot.drawRobot(robot.state[-1]['pos'], "blue")
+            self.plot.drawRobot(robot.state[-1]['pos'], "red")
             self.plot.draw()
 
         self.plot.clear()
         self.plot.stop("Record Trajectory")
-        self.terminal.clearUpTo(2)
-        self.terminal.echo()
+        terminal.clearUpTo(2)
+        terminal.echo()
+        terminal.doneCurses()
 
         # clean up the trajectory
         # if we turn, combine that with a forward motion
@@ -105,7 +110,7 @@ class Simulator:
                 accumulateTurn = 0
                 cleaned.append(cmd)
 
-        trajName = self.terminal.queryForString("Please name this trajectory:")
+        trajName = raw_input("Please name this trajectory: ")
         self.saveTrajectory(cleaned, trajName)
 
     def saveTrajectory(self, traj, name):
@@ -114,6 +119,8 @@ class Simulator:
         pickle.dump(traj, open('trajectories/' + name + ".p", "wb"))
 
     def stepThroughOneTrajectory(self, trajName):
+        terminal = CommandLineApp()
+
         traj = self.loadTrajectory(trajName)
 
         if not traj:
@@ -129,20 +136,20 @@ class Simulator:
                                      'marker': 'x',
                                      'scale': 10}})
 
-        self.plot.drawRobotTrajectory(robot, "blue")
+        self.plot.drawRobotTrajectory(robot, "red")
 
         self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
-                                       {"type1": 'blue'})
+                                       {"type1": 'red'})
 
-        self.plot.drawRobot(robot.state[-1]['pos'], "blue")
+        self.plot.drawRobot(robot.state[-1]['pos'], "red")
         self.plot.draw()
 
-        self.terminal.clearUpTo(2)
-        self.terminal.println("Press any key to step...")
-        self.terminal.noecho()
+        terminal.clearUpTo(2)
+        terminal.println("Press any key to step...")
+        terminal.noecho()
 
         for step in traj:
-            key = self.terminal.keyPress()
+            key = terminal.keyPress()
 
             robot.move(step)
             robot.simSense(self.map, robot.state[-1]['pos'])
@@ -153,19 +160,20 @@ class Simulator:
                                          'marker': 'x',
                                          'scale': 10}})
 
-            self.plot.drawRobotTrajectory(robot, "blue")
+            self.plot.drawRobotTrajectory(robot, "red")
 
             self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
-                                           {"type1": 'blue'})
+                                           {"type1": 'red'})
 
-            self.plot.drawRobot(robot.state[-1]['pos'], "blue")
+            self.plot.drawRobot(robot.state[-1]['pos'], "red")
             self.plot.draw()
             self.plot.draw()
 
         self.plot.clear()
         self.plot.stop("Step Through Trajectory")
-        self.terminal.clearUpTo(2)
-        self.terminal.echo()
+        terminal.clearUpTo(2)
+        terminal.echo()
+        terminal.doneCurses()
         return True
 
     def loadTrajectory(self, name):
@@ -175,6 +183,8 @@ class Simulator:
             return False
 
     def stepThroughRealTrajectory(self, trajName):
+        terminal = CommandLineApp()
+
         traj = self.loadTrajectory(trajName)
 
         if not traj:
@@ -195,14 +205,14 @@ class Simulator:
                                      'scale': 10}})
 
         # where the robot thinks it has been
-        self.plot.drawRobotTrajectory(robot, "blue")
+        self.plot.drawRobotTrajectory(robot, "red")
 
         # what the robot thinks it is seeing
         self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
-                                       {"type1": 'blue'})
+                                       {"type1": 'red'})
 
         # where the robot thinks it is
-        self.plot.drawRobot(robot.state[-1]['pos'], "blue")
+        self.plot.drawRobot(robot.state[-1]['pos'], "red")
 
         # where the robot thinks the landmarks are
         self.plot.drawRobotMap(robot,
@@ -211,19 +221,19 @@ class Simulator:
                                           'scale': 10}})
 
         # where the robot really is
-        self.plot.drawTrajectory(pos, "red")
+        self.plot.drawTrajectory(pos, "blue")
         # what the robot is actually seeing
-        self.plot.drawRobotObservation(robot, pos[-1], {"type1": "red"})
+        self.plot.drawRobotObservation(robot, pos[-1], {"type1": "blue"})
         # where the robot really us
-        self.plot.drawRobot(pos[-1], "red")
+        self.plot.drawRobot(pos[-1], "blue")
         self.plot.draw()
 
-        self.terminal.clearUpTo(2)
-        self.terminal.println("Press any key to step...")
-        self.terminal.noecho()
+        terminal.clearUpTo(2)
+        terminal.println("Press any key to step...")
+        terminal.noecho()
 
         for step in traj:
-            key = self.terminal.keyPress()
+            key = terminal.keyPress()
 
             pos.append(robot.simMove(pos[-1], step))
             robot.simSense(self.map, pos[-1])
@@ -236,14 +246,14 @@ class Simulator:
                                          'scale': 10}})
 
             # where the robot thinks it has been
-            self.plot.drawRobotTrajectory(robot, "blue")
+            self.plot.drawRobotTrajectory(robot, "red")
 
             # what the robot thinks it is seeing
             self.plot.drawRobotObservation(robot, robot.state[-1]['pos'],
-                                           {"type1": 'blue'})
+                                           {"type1": 'red'})
 
             # where the robot thinks it is
-            self.plot.drawRobot(robot.state[-1]['pos'], "blue")
+            self.plot.drawRobot(robot.state[-1]['pos'], "red")
 
             # where the robot thinks the landmarks are
             self.plot.drawRobotMap(robot,
@@ -252,17 +262,18 @@ class Simulator:
                                               'scale': 10}})
 
             # where the robot really is
-            self.plot.drawTrajectory(pos, "red")
+            self.plot.drawTrajectory(pos, "blue")
             # what the robot is actually seeing
-            self.plot.drawRobotObservation(robot, pos[-1], {"type1": "red"})
+            self.plot.drawRobotObservation(robot, pos[-1], {"type1": "blue"})
             # where the robot really us
-            self.plot.drawRobot(pos[-1], "red")
+            self.plot.drawRobot(pos[-1], "blue")
             self.plot.draw()
 
         self.plot.clear()
         self.plot.stop("Step Through Trajectory")
-        self.terminal.clearUpTo(2)
-        self.terminal.echo()
+        terminal.clearUpTo(2)
+        terminal.echo()
+        terminal.doneCurses()
         return True
 
     def runRobotThoughTrajectory(self, robot, traj):
@@ -299,14 +310,14 @@ class Simulator:
                                           'scale': 10}})
 
         # where the robot thinks it has been
-        self.plot.drawRobotTrajectory(robot, "blue")
+        self.plot.drawRobotTrajectory(robot, "red")
 
         # where the robot really is
-        self.plot.drawTrajectory(realTraj, "red")
+        self.plot.drawTrajectory(realTraj, "blue")
 
         self.plot.draw()
 
-        self.terminal.waitMsg("Ready to run nonlinear SAM?")
+        wait("Ready to run nonlinear SAM?")
 
         robot.nonlinearSAM()
 
@@ -317,10 +328,10 @@ class Simulator:
                                           'scale': 10}})
 
         # where the robot really is
-        self.plot.drawTrajectory(pos, "green")
+        self.plot.drawTrajectory(robot.trajectoryXY(), "green")
 
         self.plot.draw()
-        self.terminal.waitMsg("How's it look?")
+        wait("How's it look?")
 
         self.plot.clear()
         self.plot.stop("Step Through Trajectory")

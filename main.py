@@ -19,8 +19,6 @@
 #       motion model
 #       sensor model
 
-from CommandLineApp import *
-terminal = CommandLineApp()
 
 from pylab import *
 from random import gauss
@@ -67,39 +65,51 @@ r = Robot(robotOptions)
 
 simulatorOptions = {
     "map": m,
-    "robots": [r],
-    "terminal": terminal
+    "robots": [r]
 }
 
 sim = Simulator(simulatorOptions)
 
 
-def main():
-
-    terminal.println("Chet's SAM Algorithm")
-    terminal.nextLine()
-
-    if terminal.yesno("Would you to record a trajectory?"):
+def recordTraj():
+    if yesno("Would you to record a trajectory?: "):
         sim.recordTrajectory()
 
-    if terminal.yesno("Would you like to step through an ideal trajectory?"):
-        traj = False
-        while not traj:
-            trajName = terminal.queryForString("which trajectory:")
-            traj = sim.stepThroughOneTrajectory(trajName)
 
-    if terminal.yesno("Would you like to step through a real trajectory?"):
-        traj = False
-        while not traj:
-            trajName = terminal.queryForString("which trajectory:")
-            traj = sim.stepThroughRealTrajectory(trajName)
+def stepIdeal():
+    if yesno("Would you like to step through an ideal trajectory?"):
+        trajName = raw_input("which trajectory: ")
+        traj = sim.stepThroughOneTrajectory(trajName)
+        if not traj:
+            stepIdeal()
 
-    if terminal.yesno("Would you like to run nonlinear SAM on a trajectory?"):
-        traj = False
-        while not traj:
-            trajName = terminal.queryForString("which trajectory:")
-            traj = sim.runNonlinearSAM(trajName)
+
+def stepReal():
+    if yesno("Would you like to step through a real trajectory?"):
+        trajName = raw_input("which trajectory: ")
+        traj = sim.stepThroughRealTrajectory(trajName)
+        if not traj:
+            stepReal()
+
+
+def nonlinearSAM():
+    if yesno("Would you like to run nonlinear SAM on a trajectory?"):
+        trajName = raw_input("which trajectory: ")
+        traj = sim.runNonlinearSAM(trajName)
+        if not traj:
+            nonlinearSAM()
+
+
+def main():
+
+    print "Chet's SAM Algorithm\n"
+
+    # recordTraj()
+    # stepIdeal()
+    # stepReal()
+    # nonlinearSAM()
+    sim.runNonlinearSAM('circle')
 
 
 if __name__ == "__main__":
-    terminal.start(main)
+    main()

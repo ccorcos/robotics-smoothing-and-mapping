@@ -83,8 +83,20 @@ class LaserSensorSim:
         angleNoise = gauss(0, self.noise[1])
         return [(d + distanceNoise), (t + angleNoise)]
 
-    def jacobian():
-        pass
+    def jacobianPos(self, pos, obs):
+        x = pos[0]
+        y = pos[1]
+        a = pos[2]
+        f = obs[0]
+        t = obs[1]
+        return np.array([[arccos(t) * sign(cos(t)), arcsin(t) * sign(sin(t)), 0], [-sin(t) / d, cos(t) / d, -1 / d]])
+
+    def jacobianObs(self, pos, obs):
+        return np.array([[1, 0], [0, 1]])
+
+    def adjust(self, X, C):
+        # adjust for maholanobis
+        return inner(sqrt(C), X)
 
     def noiseCovariance(self, obs):
         return np.diag(self.noise)

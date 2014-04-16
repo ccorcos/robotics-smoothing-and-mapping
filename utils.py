@@ -25,3 +25,19 @@ def findKVindex(arr, key, val):
         if arr[i][key] == val:
             return i
     return -1
+
+
+def wait(msg=''):
+    print msg
+    a = raw_input("press <enter> to continue...")
+
+
+def yesno(msg):
+    print msg
+    a = raw_input('y/n: ')
+    if a == 'y':
+        return True
+    elif a == 'n':
+        return False
+    else:
+        return yesno(msg)

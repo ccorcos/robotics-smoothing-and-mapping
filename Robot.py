@@ -1,6 +1,6 @@
 from pylab import *
 from random import gauss
-from scipy.optimize import leastsq
+from scipy.optimize import *
 from utils import *
 
 
@@ -96,6 +96,8 @@ class Robot:
         initState = self.state[0]
         initState["obs"] = []
         initState["cmd"] = None
+        self.landmarks = []
+        self.plotLandmarks = {}
         self.state = [initState]
 
     def sensorOfType(self, s):
@@ -133,7 +135,7 @@ class Robot:
             self.unwrap(X, posShape, posLen, lmShape, lmLen)
 
             N = len(self.state)
-            cost = [0] * len(X)
+            cost = []
             for i in range(N):
                 thisState = self.state[i]
                 whereIThinkIAm = thisState['pos']
@@ -147,9 +149,9 @@ class Robot:
                         whereIShouldBe,
                         whereIThinkIAm,
                         self.motionModel.noiseCovariance(whereIThoughtIWas))
-                    cost[i] = cost[i] + thisCost
+                    cost.append(thisCost)
 
-                for observation in thisState["obs"]:
+                for observation in thisState['obs']:
                     whatISensed = observation["sensor pos"]
                     whereIThinkTheLandmarkIs = findKV(self.landmarks,
                                                       "map index",
@@ -164,28 +166,163 @@ class Robot:
                         whatIShouldHaveSensed,
                         whatISensed,
                         theSensorUsed.noiseCovariance(whatIShouldHaveSensed))
-                    j = findKVindex(self.landmarks,
-                                    'map index',
-                                    observation["map index"])
-                    cost[N + j] = cost[N + j] + thisCost
+
+                    cost.append(thisCost)
+
+                # for lm in self.landmarks:
+                #     observation = findKV(
+                #         thisState["obs"], "map index", lm["map index"])
+                #     if observation:
+                #         whatISensed = observation["sensor pos"]
+                #         whereIThinkTheLandmarkIs = findKV(self.landmarks,
+                #                                           "map index",
+                #                                           observation["map index"])["pos"]
+                #         theSensorUsed = self.sensorOfType(observation["type"])
+
+                #         whatIShouldHaveSensed = theSensorUsed.obsIdeal(
+                #             whereIThinkIAm,
+                #             whereIThinkTheLandmarkIs)
+
+                #         thisCost = mahalanobis(
+                #             whatIShouldHaveSensed,
+                #             whatISensed,
+                #             theSensorUsed.noiseCovariance(whatIShouldHaveSensed))
+                #         j = findKVindex(self.landmarks,
+                #                         'map index',
+                #                         observation["map index"])
+                # print j
+                #         cost.append(thisCost)
+                #     else:
+                #         cost.append(0)
+
+            print 'cost: ', sum(cost)
+            # return sum(cost)
             return cost
+
+        # while True:
+        #     c = f(X0)
+        #     print c
+        #     n = len(X0)
+        #     for i in range(n):
+        #         p = [0] * n
+        #         p[i] = 0.01
+        #         p = np.array(p)
+        #         if f(X0 + p) < c:
+        #             X0 = X0 + p
+        #         elif f(X0 - p) < c:
+        #             X0 = X0 - p
 
         Xf = leastsq(f, X0)
 
+        # update landmarks for plotting
+        self.plotLandmarks = {}
+        for l in self.landmarks:
+            if l["type"] in self.plotLandmarks:
+                self.plotLandmarks[l["type"]].append(l["pos"])
+            else:
+                self.plotLandmarks[l["type"]] = [l["pos"]]
+
+    def linearSAM(self):
+
+        N = len(self.state)
+        M = len(self.landmarks)
+        # A = {'pos': [], 'obs': []}
+        A = []
+        b = []
+
+        for i in range(1, N):
+            whereIAm = self.state[i]
+            whereIWas = self.state[i - 1]
+            whereIShouldBe = self.motionModel.move(whereIWas['pos'],
+                                                   whereIWas['cmd'])
+            ai = whereIAm['pos'] - whereIShouldBe
+
+            Fi = self.motionModel.jacobianPos(whereIWas['pos'],
+                                              whereIWas['cmd'])
+            Gi = eye(f.shape)
+
+            Ci = self.motionModel.noiseCovariance(whereIWas['pos'])
+            Fi = self.motionModel.adjust(F, C)
+            Gi = self.motionModel.adjust(G, C)
+            ai = self.motionModel.adjust(ai, C)
+
+            Ai = [None] * (M + N - 1)
+            Ai[i] = Gi
+            Ai[i - 1] = Fi
+            A.append(Ai)
+            b.append(ai)
+            # A['pos'].append([i, Fi, Gi, ai])
+
+            for j in range(len(whereIAm['obs'])):
+                observation in whereIAm['obs'][j]:
+                whatIObserved = observation['sensor pos']
+                whereIThinkTheLandmarkIs = findKV(self.landmarks,
+                                                  "map index",
+                                                  observation["map index"])["pos"]
+                theSensorUsed = self.sensorOfType(observation["type"])
+
+                whatIShouldObserve = theSensorUsed.obsIdeal(whereIAm['pos'],
+                                                            whereIThinkTheLandmarkIs)
+                ci = whatIObserved - whatIShouldObserve
+
+                Hi = theSensorUsed.jacobianPos(whereIAm['pos'], whatIObserved)
+                Ji = theSensorUsed.jacobianObs(whereIAm['pos'], whatIObserved)
+
+                Ci = theSensorUsed.noiseCovariance(whereIWas['pos'])
+                Hi = theSensorUsed.adjust(Hi, Ci)
+                Ji = theSensorUsed.adjust(Ji, Ci)
+                ci = theSensorUsed.adjust(ci, Ci)
+                lm = observation["map index"]
+
+                Ai = [None] * (M + N - 1)
+                Ai[i] = Hi
+                Ai[lm + N - 1] = Ji
+                A.append(Ai)
+                b.append(bi)
+
+        # now we need to flatten it out a little bit
+        A2 = []
+        b2 = []
+        for i in range(M + N - 1):
+            bi = b[i]
+            Ai = A[i]
+            n = len(bi)
+            for j in range(n):
+                b2.append(bi[j])
+            A2i = zeros((n, M + N - 1))
+            for j in range(len(Ai)):
+                if Ai[j] != None:
+                    for r in range(n):
+                        for c in range(n):
+                            A2i[r][n * j + c] = Ai[j][r][c]
+            A2 = A2 + A2i.tolist()
+
+        delta = inner(pinv(np.array(A2)).T, np.array(b))
+
+        # FUCK!!!!! How do I update this now?!
+
+        # update landmarks for plotting
+        self.plotLandmarks = {}
+        for l in self.landmarks:
+            if l["type"] in self.plotLandmarks:
+                self.plotLandmarks[l["type"]].append(l["pos"])
+            else:
+                self.plotLandmarks[l["type"]] = [l["pos"]]
+
 
 def mahalanobis(x, y, C):
-    # print x, y, C
-    # input("sdf")
-
-    # try:
     d = np.array(x) - np.array(y)
     D = pinv(np.array(C))
     m = inner(inner(d, D), d)
     a = sqrt(m)
+    # if isnan(a):
+    #     print x
+    #     print y
+    #     print C
+    #     print d
+    #     print D
+    #     print m
+    #     wait()
     return a
-    # except:
-    #     print x, y, C
-    # print d, D
-    #     input("sdf")
 
     return
