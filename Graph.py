@@ -36,12 +36,39 @@ edgeIdx = 0
 edges = []
 
 
+"""
+robot:
+    motion model:
+        simMove - robot simulated motion
+        motionModel
+        jacobian
+        mohalanobis
+    sensors:
+        sensor model
+            simSense - simulated sensing with map
+            observationModel
+            jacobianLandmark
+            jacobianPosition
+            mohalanobis
+
+
+    def move:
+        generate a new node and an edge
+        nextNode = Node(naivePosition)
+        edge = Edge(cmd,motionCov,prevNode, nextNode, motionModel, etc. )
+
+    def sense:
+        generate new nodes if necessary and new edges
+
+"""
+
+
 class Node:
 
-    def __init__(self, value, name=""):
+    def __init__(self, value, other={}):
         # SAM: value is a landmark (x, y) or a position (x, y, angle)
         self.value = value
-        self.name = name
+        self.other = other
         # keep track of which node
         globals nodes, nodeIdx
         self.idx = nodeIdx
