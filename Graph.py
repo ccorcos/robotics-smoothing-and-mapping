@@ -35,32 +35,27 @@ nodes = []
 edgeIdx = 0
 edges = []
 
+# robot:
+#     motion model:
+#         simMove - robot simulated motion
+#         motionModel
+#         jacobian
+#         mohalanobis
+#     sensors:
+#         sensor model
+#             simSense - simulated sensing with map
+#             observationModel
+#             jacobianLandmark
+#             jacobianPosition
+#             mohalanobis
 
-"""
-robot:
-    motion model:
-        simMove - robot simulated motion
-        motionModel
-        jacobian
-        mohalanobis
-    sensors:
-        sensor model
-            simSense - simulated sensing with map
-            observationModel
-            jacobianLandmark
-            jacobianPosition
-            mohalanobis
+#     def move:
+#         generate a new node and an edge
+#         nextNode = Node(naivePosition)
+#         edge = Edge(cmd,motionCov,prevNode, nextNode, motionModel, etc. )
 
-
-    def move:
-        generate a new node and an edge
-        nextNode = Node(naivePosition)
-        edge = Edge(cmd,motionCov,prevNode, nextNode, motionModel, etc. )
-
-    def sense:
-        generate new nodes if necessary and new edges
-
-"""
+#     def sense:
+#         generate new nodes if necessary and new edges
 
 
 class Node:
@@ -197,4 +192,15 @@ def flattenMatrix(A):
 A = flattenMatrix(A)
 b = flattenMatrix(b)
 
-pinv(A)
+# colamd, QR factorization
+d = pinv(A)*b
+
+where = 0
+# now, we go backwards. we add the correct element of d to all nodes and edges
+for i in range(len(nodes)):
+    node = nodes[i]
+    if node.idx != i:
+        ex("ERROR: wrong node!")
+    di = d[where:where+len(node.value)]
+    node.value = node.value + di
+    where = where + len(node.value)

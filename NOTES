@@ -1,3 +1,11 @@
 This doesnt work with covariance -- only with independant noise.
 
+Graph optimization:
+node values
+edge observation
+edge prediction function
+edge error function
+edge error jacobians w.r.t. each node
+
+
 
