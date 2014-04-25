@@ -142,6 +142,15 @@ class Graph:
         else:
             return n[0]
 
+
+
+
+
+
+
+
+
+
 # def emptyList(shape):
 #     arr = zeros(shape)
 #     return arr.tolist()

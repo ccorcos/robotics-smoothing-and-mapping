@@ -29,7 +29,7 @@ class Robot:
         self.graph = Graph()
 
         # create a first node for the initial position
-        node = Node(initialPosition, "position", 0):
+        node = Node(initialPosition, "position", 0)
         self.graph.addNode(node)
 
         # keep track of the most recent position for dead reakoning

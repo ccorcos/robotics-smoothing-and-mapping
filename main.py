@@ -49,7 +49,7 @@ def stepTraj():
         trajName = raw_input("which trajectory: ")
         traj = sim.stepThroughTrajectory(trajName, unicycle, initialPosition)
         if not traj:
-            stepIdeal()
+            stepTraj()
 
 
 def main():

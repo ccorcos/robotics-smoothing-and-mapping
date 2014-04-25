@@ -47,25 +47,26 @@ class Simulator:
                 # right
                 pos = motion.move(pos, [0, -dAngle])
                 commands.append([0, -dAngle])
+                traj.append(pos[0:2])
                 
 
             elif key == 97:
                 # left
-                pos = motion.move([0, dAngle])
+                pos = motion.move(pos, [0, dAngle])
                 commands.append([0, dAngle])
-                traj.append(pos)
+                traj.append(pos[0:2])
 
             elif key == 119:
                 # up
-                pos = motion.move([dForward, 0])
+                pos = motion.move(pos, [dForward, 0])
                 commands.append([dForward, 0])
-                traj.append(pos)
+                traj.append(pos[0:2])
 
             elif key == 115:
                 # backward
-                pos = motion.move([-dForward, 0])
+                pos = motion.move(pos, [-dForward, 0])
                 commands.append([-dForward, 0])
-                traj.append(pos)
+                traj.append(pos[0:2])
 
             else:
                 if terminal.yesno("Done?"):
@@ -113,7 +114,7 @@ class Simulator:
 
         commands = self.loadTrajectory(trajName)
 
-        if not traj:
+        if not commands:
             return False
 
         idealTraj = [initialPosition[0:2]]
@@ -139,8 +140,8 @@ class Simulator:
 
             idealPos = motion.move(idealPos, cmd)
             realPos = motion.move(realPos, cmd)
-            idealTraj.append(idealPos)
-            realTraj.append(realPos)
+            idealTraj.append(idealPos[0:2])
+            realTraj.append(realPos[0:2])
 
             # update plot
             self.plot.clear()

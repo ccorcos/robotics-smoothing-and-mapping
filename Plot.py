@@ -4,8 +4,6 @@ import colorsys
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 
-from utils import *
-
 class Plot:
 
     def start(self, name):
@@ -31,7 +29,11 @@ class Plot:
         for i in range(len(types)):
             color = cm(1. * i / len(types))
             landmarkType = types[i]
-            landmarks = array(pluck(simMap.landmarks, landmarkType))
+            # filter for the landmarks of this type
+            landmarks = filter(lambda x: x['type'] == landmarkType, simMap.landmarks)
+            # get the landmark positions
+            landmarks = map(lambda x: x['pos'], simMap.landmarks)
+            landmarks = array(landmarks)
             self.ax.scatter(landmarks[:, 0],
                             landmarks[:, 1],
                             color=color,
