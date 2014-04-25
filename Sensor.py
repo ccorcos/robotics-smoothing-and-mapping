@@ -2,12 +2,11 @@ from pylab import *
 from random import gauss
 from utils import *
 
-
 class LaserSensorSim:
 
     def __init__(self, noise, sensorType, maxDistance, maxAngle):
 
-        self.noise = noise # distance, angle
+        self.noise = noise # distance, angle standard deviations
         self.sensorType = sensorType
         self.maxDistance = maxDistance
         self.maxAngle = maxAngle
@@ -91,4 +90,4 @@ class LaserSensorSim:
         return np.array([[1, 0], [0, 1]])
 
     def covariance(self):
-        return np.diag(self.noise)
+        return array([[self.noise[0]**2, 0], [0, self.noise[1]**2]])

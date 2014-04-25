@@ -5,7 +5,7 @@ from utils import *
 class UnicycleModel:
 
     def __init__(self, noise):
-        self.noise = noise
+        self.noise = noise # [x, y, a] standard deviations
 
     def simMove(self, pos, cmd):
         """
@@ -57,4 +57,4 @@ class UnicycleModel:
 
     def covariance(self, pos):
         a = pos[2]
-        return np.diag([abs(self.noise[0] * cos(a)), abs(self.noise[0] * sin(a)), self.noise[1]])
+        return np.diag([abs(self.noise[0]**2 * cos(a)), abs(self.noise[0]**2 * sin(a)), self.noise[1]**2])

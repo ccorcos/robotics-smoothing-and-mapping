@@ -38,8 +38,6 @@ def yesno(msg):
         return yesno(msg)
 
 
-
-
 class ex(Exception):
 
     def __init__(self, msg):
