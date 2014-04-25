@@ -4,26 +4,167 @@ This is meant to be a general graph optimization tool.
 references:
 http://ais.informatik.uni-freiburg.de/publications/papers/kuemmerle11icra.pdf
 http://people.csail.mit.edu/kaess/pub/Dellaert06ijrr.pdf
-
-inputs:
-  nodes
-  edges
-  edge potential measurement
-  edge potential function
-  edge potential function covariance
-
-
-in the case of SAM:
-  nodes are landmarks (x,y) and position (x,y,a)
-  edges are motions or observations
-  edge potential measurement is either the command (forward, turn) or observation (distance, angle)
-  edge potential function computes the expected measurement given both nodes
-  edge potential function covariance is gaussian error covariance expected
 """
 
 from pylab import *
 from pprint import pprint
+from utils import *
 
+class Node:
+
+    def __init__(self, value, nodeType, descriptor):
+        # SAM: value is a landmark (x, y) or a position (x, y, angle)
+        self.value = value
+        self.nodeType = nodeType
+        self.descriptor = descriptor
+        # the Graph will set an index to keep track of where it is
+        # self.idx = idx
+
+
+# custom edge classes are needed for different types of observations
+# an edge class must have the following instance variables and methods:
+
+# self.value = the value observed. (SAM: command or sensor reading)
+# self.node1 = this is an undirected graph, but the order here matters
+# self.node2
+# def error(self) = the error between value and the potential function for 
+#     computing the value between the two nodes
+# def linearized(self) return 3 values
+#     the jacobian of error with respect to node1
+#     the jacobian of error with respect to node2
+#     the negative error
+
+
+class MotionEdge:
+    def __init__(self, model, value, node1, node2):
+        self.model = model
+        self.value = value # cmd
+        self.node1 = node1
+        self.node2 = node2
+
+    def error(self):
+        """The error associated with this edge: f(x_0, u_1) - x_1"""
+        pos0 = self.node1.value
+        pos1 = self.node2.value
+        cmd = self.value
+        err = self.model.move(pos0, cmd) - pos1
+        return err
+
+    def linearized(self):
+        """Solve by linearizing.
+        http://en.wikipedia.org/wiki/Linearization#Linearisation_of_a_multivariable_function
+        In general:
+        error(node1, node2, values) + derror/dnode1 * dnode1 + derror/dnode2 * dnode2 = 0
+        Therefor, we solve for dnode1 and dnode2
+        derror/dnode1 * dnode1 + derror/dnode2 * dnode2 = -error(node1, node2, values)
+        """
+        pos0 = self.node1.value
+        pos1 = self.node2.value
+        cmd = self.value
+
+        F = self.model.jacobianPosition(pos0, cmd)
+        G = eye(len(pos0))
+        err = self.error()
+
+        # transform via covariance so we can do the L2 distance
+        # as opposed to computing the mohalanobis distance
+        C = self.model.covariance()
+        Fm = mohalanobis(C,F)
+        Gm = mohalanobis(C,G)
+        a = mohalanobis(C,-err)
+
+        return Fm,Gm,a
+
+
+class ObservationEdge:
+    def __init__(self, model, value, node1, node2):
+        self.model = model
+        self.value = value # obs
+        self.node1 = node1
+        self.node2 = node2
+
+    def error(self):
+        """The error associated with this edge: h(x, l) - z"""
+        pos = self.node1.value
+        lm = self.node2.value
+        obs = self.value
+        err = self.model.sense(pos, lm) - obs
+        return err
+
+    def linearized(self):
+        """
+        Solve by linearizing.
+        http://en.wikipedia.org/wiki/Linearization#Linearisation_of_a_multivariable_function
+        In general:
+        error(node1, node2, values) + derror/dnode1 * dnode1 + derror/dnode2 * dnode2 = 0
+        Therefor, we solve for dnode1 and dnode2
+        derror/dnode1 * dnode1 + derror/dnode2 * dnode2 = -error(node1, node2, values)
+        """
+        pos = self.node1.value
+        lm = self.node2.value
+        obs = self.value
+
+        H = self.model.jacobianPosition(pos, lm)
+        J = self.model.jacobianLandmark(pos, lm)
+        err = self.error()
+
+        # transform via covariance so we can do the L2 distance
+        # as opposed to computing the mohalanobis distance
+        C = self.model.covariance()
+        Hm = mohalanobis(C,H)
+        Jm = mohalanobis(C,J)
+        c = mohalanobis(C,-err)
+        return F,G,a
+
+
+class Graph:
+
+    def __init__(self):
+        # self.nodeIdx = 0
+        # self.edgeIdx = 0
+        self.nodes = []
+        self.edges = []
+
+    def addNode(self, node):
+        self.nodes.append(node)
+
+    def addEdge(self, edge):
+        self.edges.append(edge)
+
+    def getNodesOfType(self, nodeType):
+        return filter(lambda x: x.nodeType == nodeType, self.nodes)
+
+    def getNodeOfTypeAndDescriptor(self, nodeType, descriptor):
+        n = filter(lambda x: x.nodeType == nodeType and x.descriptor == descriptor, self.nodes)
+        if len(n) > 1:
+            ex("ERROR: multiple nodes of the same descriptor!")
+        if len(n) == 0:
+            return None
+        else:
+            return n[0]
+
+
+
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
 # TODO
 # mohalanobis distance
 # theano jacobian
@@ -56,6 +197,36 @@ edges = []
 
 #     def sense:
 #         generate new nodes if necessary and new edges
+
+
+# graph:
+#   node:
+#       value (robot and landmark positions)
+#   edge:
+#       value (move commands and sensor observations)
+#       node1
+#       node2
+#       error(node1, node2, value):
+#           = f(node1.value, value) - node2.value
+#           = h(node1.value, node2.value) - value
+#           
+#       # we want to minimize the square error. 
+#       # take dertivative, set to zero.
+#       linearized(node1, node2, value):
+#           
+#           error(node1, node2, values) = 0
+#           linearize:
+#           error(node1, node2, values) + derror/dnode1*dnode1 + derror/dnode2*dnode2 = 0
+#           derror/dnode1*dnode1 + derror/dnode2*dnode2 = -error(node1, node2, values)
+#           
+#           return J1, J2, e
+#           
+#           
+
+# http://en.wikipedia.org/wiki/Linearization#Linearisation_of_a_multivariable_function
+# 
+# Nonlinear version:
+#   edge errors -> 0
 
 
 class Node:
@@ -204,3 +375,108 @@ for i in range(len(nodes)):
     di = d[where:where+len(node.value)]
     node.value = node.value + di
     where = where + len(node.value)
+
+
+
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+
+# robot.move()
+#     move,
+#     create a node,
+#     add edges,
+
+# robot.sense()
+#     sense,
+#     create nodes as nevessary
+#     add edges
+
+
+class MotionEdge:
+    def __init__(self, model, value, node1, node2):
+        self.model = model
+        self.value = value # cmd
+        self.node1 = node1
+        self.node2 = node2
+
+    def error(self):
+        """The error associated with this edge: f(x_0, u_1) - x_1"""
+        pos0 = self.node1.value
+        pos1 = self.node2.value
+        cmd = self.value
+        err = self.model.move(pos0, cmd) - pos1
+        return err
+
+    def linearized(self):
+        """Solve by linearizing.
+        http://en.wikipedia.org/wiki/Linearization#Linearisation_of_a_multivariable_function
+        In general:
+        error(node1, node2, values) + derror/dnode1 * dnode1 + derror/dnode2 * dnode2 = 0
+        Therefor, we solve for dnode1 and dnode2
+        derror/dnode1 * dnode1 + derror/dnode2 * dnode2 = -error(node1, node2, values)
+        """
+        pos0 = self.node1.value
+        pos1 = self.node2.value
+        cmd = self.value
+
+        F = self.model.jacobianPositionMoholanobisAdjusted(pos0, cmd)
+        G = eye(len(pos0))
+        err = self.model.move(pos0, cmd) - pos1
+        a = -err
+        return F,G,a
+
+
+
+
+
+
+class ObservationEdge:
+    def __init__(self, model, value, node1, node2):
+        self.model = model
+        self.value = value # obs
+        self.node1 = node1
+        self.node2 = node2
+
+    # def error(self):
+    #     """The error associated with this edge: h(x, l) - z"""
+    #     pos0 = self.node1.value
+    #     pos1 = self.node2.value
+    #     cmd = self.value
+    #     err = self.model.move(pos0, cmd) - pos1
+    #     return err
+
+    # def linearized(self):
+    #     """Solve by linearizing.
+    #     http://en.wikipedia.org/wiki/Linearization#Linearisation_of_a_multivariable_function
+    #     In general:
+    #     error(node1, node2, values) + derror/dnode1 * dnode1 + derror/dnode2 * dnode2 = 0
+    #     Therefor, we solve for dnode1 and dnode2
+    #     derror/dnode1 * dnode1 + derror/dnode2 * dnode2 = -error(node1, node2, values)
+    #     """
+    #     pos0 = self.node1.value
+    #     pos1 = self.node2.value
+    #     cmd = self.value
+
+    #     F = self.model.jacobianPositionMoholanobisAdjusted(pos0, cmd)
+    #     G = eye(len(pos0))
+    #     err = self.model.move(pos0, cmd) - pos1
+    #     a = -err
+    #     return F,G,a
+

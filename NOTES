@@ -9,3 +9,11 @@ edge error jacobians w.r.t. each node
 
 
 
+TODO:
+
+motion model class definition
+sensor model class definition
+
+graph node class definition
+graph edge class definition
+
