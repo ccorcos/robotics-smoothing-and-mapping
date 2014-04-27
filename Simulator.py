@@ -165,13 +165,13 @@ class Simulator:
         else:
             return False
 
-    # def runRobotThoughTrajectory(self, robot, traj):
-    #     robot.reset()
-    #     pos = [robot.state[0]['pos']]
-    #     robot.simSense(self.simMap, pos[-1])
-    #     for step in traj:
-    #         pos.append(robot.simMove(pos[-1], step))
-    #         robot.simSense(self.simMap, pos[-1])
-    #     return pos
+    def runRobotThoughTrajectory(self, robot, traj):
+        robot.reset()
+        pos = [robot.state[0]['pos']]
+        robot.simSense(self.simMap, pos[-1])
+        for step in traj:
+            pos.append(robot.simMove(pos[-1], step))
+            robot.simSense(self.simMap, pos[-1])
+        return pos
 
     

@@ -11,9 +11,11 @@ edge error jacobians w.r.t. each node
 
 TODO:
 
-motion model class definition
-sensor model class definition
+simulator step through
+    plot real and ideal trajectories
 
-graph node class definition
-graph edge class definition
+step through trajectory with robot
+    plot observations
+    check the graph
 
+graph optimization!
