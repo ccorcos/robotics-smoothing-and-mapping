@@ -24,7 +24,7 @@ class LaserSensorSim:
         sensed = []
         for i in range(len(landmarks)):
             landmark = landmarks[i]  # landmark i
-            if landmark['type'] == self.type:
+            if landmark['type'] == self.sensorType:
 
                 lm = landmark['pos']
                 # distance to the landmark
@@ -45,7 +45,7 @@ class LaserSensorSim:
                     obs = array([(d + distanceNoise), (t + angleNoise)])
                     descriptor = i # the index to the map
 
-                    sensed.append({"obs":obs, "descriptor":descriptor, "sensorType":sensorType})
+                    sensed.append({"obs":obs, "descriptor":descriptor, "sensorType":self.sensorType})
 
         return sensed
 

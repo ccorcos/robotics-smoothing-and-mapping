@@ -51,6 +51,12 @@ def stepTraj():
         if not traj:
             stepTraj()
 
+def runRobot():
+    if yesno("Would you like to plot a robot graph?"):
+        trajName = raw_input("which trajectory: ")
+        traj = sim.runRobotThoughTrajectory(robot, trajName)
+        if not traj:
+            runRobot()
 
 def main():
 
@@ -58,6 +64,7 @@ def main():
 
     recordTraj()
     stepTraj()
+    runRobot()
 
 if __name__ == "__main__":
     main()

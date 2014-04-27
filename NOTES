@@ -11,11 +11,7 @@ edge error jacobians w.r.t. each node
 
 TODO:
 
-simulator step through
-    plot real and ideal trajectories
-
-step through trajectory with robot
-    plot observations
-    check the graph
-
 graph optimization!
+
+record traj with robots
+multiple sensors

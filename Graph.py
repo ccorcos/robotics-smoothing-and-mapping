@@ -37,11 +37,12 @@ class Node:
         # self.idx = idx
 
 class MotionEdge:
-    def __init__(self, model, value, node1, node2):
+    def __init__(self, model, value, node1, node2, edgeType):
         self.model = model
         self.value = value # cmd
         self.node1 = node1
         self.node2 = node2
+        self.edgeType = edgeType
 
     def error(self):
         """The error associated with this edge: f(x_0, u_1) - x_1"""
@@ -77,11 +78,12 @@ class MotionEdge:
         return Fm,Gm,a
 
 class ObservationEdge:
-    def __init__(self, model, value, node1, node2):
+    def __init__(self, model, value, node1, node2, edgeType):
         self.model = model
         self.value = value # obs
         self.node1 = node1
         self.node2 = node2
+        self.edgeType = edgeType
 
     def error(self):
         """The error associated with this edge: h(x, l) - z"""
@@ -132,6 +134,9 @@ class Graph:
 
     def getNodesOfType(self, nodeType):
         return filter(lambda x: x.nodeType == nodeType, self.nodes)
+
+    def getEdgesOfType(self, edgeType):
+        return filter(lambda x: x.edgeType == edgeType, self.edges)
 
     def getNodeOfTypeAndDescriptor(self, nodeType, descriptor):
         n = filter(lambda x: x.nodeType == nodeType and x.descriptor == descriptor, self.nodes)

@@ -42,14 +42,15 @@ class Robot:
         nextPos = self.motion.move(self.pos, cmd)
         # create a new node for the next position
         # the descriptor is the index in time
-        nextPosNode = Node(nextPosition, "position", self.posNode.descriptor + 1)
+        nextPosNode = Node(nextPos, "position", self.posNode.descriptor + 1)
         self.graph.addNode(nextPosNode)
         # create a new edge between them
-        edge = MotionEdge(self.motion, cmd, self.posNode, nextPosNode)
+        edge = MotionEdge(self.motion, cmd, self.posNode, nextPosNode, "motion")
         self.graph.addEdge(edge)
         # update internal state
         self.pos = nextPos
         self.posNode = nextPosNode
+
 
     def simSense(self, simMap, simPos):
         """
@@ -64,7 +65,7 @@ class Robot:
 
             for lmObs in sensorObsverations:
                 # check if this landmark has been observed before
-                lmNode = getNodeOfTypeAndDescriptor(lmObs['sensorType'], lmObs['descriptor'])
+                lmNode = self.graph.getNodeOfTypeAndDescriptor(lmObs['sensorType'], lmObs['descriptor'])
                 if lmNode == None: 
                     # if this landmark hasn't been observed before
                     # create a new node
@@ -72,25 +73,37 @@ class Robot:
                     lmNode = Node(lmPos, lmObs['sensorType'], lmObs['descriptor'])
                     self.graph.addNode(lmNode)
                 # create an edge between the nodes
-                edge = ObservationEdge(sensor, lmObs['obs'], self.posNode, lmNode)
+                edge = ObservationEdge(sensor, lmObs['obs'], self.posNode, lmNode, "observation")
                 self.graph.addEdge(edge)
 
 
+    def reset(self):
+        node = self.graph.nodes[0]
+        self.posNode = node
+        self.pos = node.value
+        self.graph = Graph()
+        self.graph.addNode(node)
 
-#     def trajectoryXY(self):
-#         traj = pluck(self.state, "pos")
-#         return np.array(traj)[:, 0:2]  # hack off the angle
 
-#     def trajectory(self):
-#         return np.array(pluck(self.state, "pos"))
+    def trajectory(self):
+        positions = self.graph.getNodesOfType("position")
+        sortedPos = sorted(positions, key=lambda x: x.descriptor)
+        traj = map(lambda x: x.value, sortedPos)
+        return array(traj)
 
-#     def reset(self):
-#         initState = self.state[0]
-#         initState["obs"] = []
-#         initState["cmd"] = None
-#         self.landmarks = []
-#         self.plotLandmarks = {}
-#         self.state = [initState]
+    def trajectoryXY(self):
+        traj = self.trajectory()
+        return traj[:, 0:2]  # hack off the angle
+
+    def position(self):
+        traj = self.trajectory()
+        pos = traj[-1]
+        return pos
+
+    def positionXY(self):
+        traj = self.trajectory()
+        pos = traj[-1]
+        return pos[0:2]
 
 #     def sensorOfType(self, s):
 #         for sensor in self.sensors:

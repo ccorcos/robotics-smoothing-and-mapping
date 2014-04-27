@@ -4,6 +4,11 @@ import colorsys
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 
+# 
+# blue = real trajectory
+# red = robot, dead reckoned trajectory
+
+
 class Plot:
 
     def start(self, name):
@@ -21,6 +26,13 @@ class Plot:
         self.ax.cla()
         plt.ioff()
         plt.close(name)
+
+    def new(self, name=""):
+        self.fig = plt.figure(name)
+        self.ax = subplot(111)
+
+    def show(self):
+        plt.show()
 
     def drawMap(self, simMap):
         types = simMap.landmarkTypes
@@ -60,6 +72,20 @@ class Plot:
         self.ax.plot(pts[:, 0],
                      pts[:, 1],
                      color=color)
+
+    def drawRobotGraph(self, robot, color="red"):
+        traj = robot.trajectoryXY()
+        self.drawTrajectory(traj)
+        for edge in robot.graph.edges:
+            xy1 = edge.node1.value[0:2]
+            xy2 = edge.node2.value[0:2]
+            if edge.edgeType == "observation":
+                color = "green"
+            arrow = np.array([xy1,xy2])
+            self.ax.plot(arrow[:, 0],
+                         arrow[:, 1],
+                         color=color)
+        
 
     # def drawRobotMap(self, robot, types):
     #     for key in robot.plotLandmarks:

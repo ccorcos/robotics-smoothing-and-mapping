@@ -139,7 +139,8 @@ class Simulator:
             key = terminal.keyPress()
 
             idealPos = motion.move(idealPos, cmd)
-            realPos = motion.move(realPos, cmd)
+            realPos = motion.simMove(realPos, cmd)
+
             idealTraj.append(idealPos[0:2])
             realTraj.append(realPos[0:2])
 
@@ -165,13 +166,93 @@ class Simulator:
         else:
             return False
 
-    def runRobotThoughTrajectory(self, robot, traj):
+    def stepRobotThoughTrajectory(self, robot, trajName):
+        
+        terminal = CommandLineApp()
+
+        commands = self.loadTrajectory(trajName)
+
+        if not commands:
+            return False
+
         robot.reset()
-        pos = [robot.state[0]['pos']]
-        robot.simSense(self.simMap, pos[-1])
-        for step in traj:
-            pos.append(robot.simMove(pos[-1], step))
-            robot.simSense(self.simMap, pos[-1])
-        return pos
+        initialPosition = robot.position()
+        
+        # the real positions of the robot
+        positions = [initialPosition]
+        pos = initialPosition
+
+        robot.simSense(self.simMap, pos)
+
+        # start an interactive plot
+        self.plot.start("Building Robot Graph")
+        self.plot.drawMap(self.simMap)
+        self.plot.drawTrajectory(positions, "blue")
+        self.plot.drawRobotGraph(robot)
+        self.plot.draw()
+
+        terminal.clearUpTo(2)
+        terminal.println("Press any key to step...")
+        terminal.noecho()
+
+        for cmd in commands:
+            key = terminal.keyPress()
+
+            # move the robot. the robot updates its graph
+            robot.move(cmd)
+            # update where the robot really is due to errors
+            pos = robot.motion.simMove(pos, cmd)
+            positions.append(pos)
+            # sense
+            robot.simSense(self.simMap, pos)
+
+            # update plot
+            self.plot.clear()
+            self.plot.drawMap(self.simMap)
+            self.plot.drawTrajectory(positions, "blue")
+            self.plot.drawRobotGraph(robot)
+            self.plot.draw()
+
+        self.plot.clear()
+        self.plot.stop("Building Robot Graph")
+        terminal.clearUpTo(2)
+        terminal.echo()
+        terminal.doneCurses()
+        return True
+
+
+    def runRobotThoughTrajectory(self, robot, trajName):
+        
+        commands = self.loadTrajectory(trajName)
+
+        if not commands:
+            return False
+
+        robot.reset()
+        initialPosition = robot.position()
+        
+        # the real positions of the robot
+        positions = [initialPosition]
+        pos = initialPosition
+
+        robot.simSense(self.simMap, pos)
+        
+        for cmd in commands:
+
+            # move the robot. the robot updates its graph
+            robot.move(cmd)
+            # update where the robot really is due to errors
+            pos = robot.motion.simMove(pos, cmd)
+            positions.append(pos)
+            # sense
+            robot.simSense(self.simMap, pos)
+
+        self.plot.new("Building Robot Graph")
+        self.plot.drawMap(self.simMap)
+        self.plot.drawTrajectory(positions, "blue")
+        self.plot.drawRobotGraph(robot)
+        self.plot.show()
+
+        return True
 
     
