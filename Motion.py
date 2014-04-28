@@ -58,16 +58,16 @@ class UnicycleModel:
 
     def covariance(self, pos, cmd):
         # FIX: include pos in this covariance
-        # f = cmd[0]
-        # t = cmd[1]
-        # a = pos[2]
+        f = cmd[0]
+        t = cmd[1]
+        a = pos[2]
 
-        # forwardVariance = self.noise[0]**2
-        # turnVariance = self.noise[1]**2
-        # xVariance = abs(forwardVariance*cos(a+t) + turnVariance*sin(a+t))
-        # yVariance = abs(forwardVariance*sin(a+t) + turnVariance*cos(a+t))
-        # aVariance = turnVariance
-        # return diag([xVariance, yVariance, aVariance])
+        forwardVariance = self.noise[0]**2
+        turnVariance = self.noise[1]**2
+        xVariance = abs(forwardVariance*cos(a+t) + turnVariance*sin(a+t))
+        yVariance = abs(forwardVariance*sin(a+t) + turnVariance*cos(a+t))
+        aVariance = turnVariance
+        return diag([xVariance, yVariance, aVariance])
         # return np.diag([abs(self.noise[0]**2 * cos(a)), abs(self.noise[0]**2 * sin(a)), self.noise[1]**2])
-        return np.diag([self.noise[0]**2, self.noise[0]**2, self.noise[1]**2])
+        # return np.diag([self.noise[0]**2, self.noise[0]**2, self.noise[1]**2])
 
