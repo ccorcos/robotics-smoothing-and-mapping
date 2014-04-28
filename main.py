@@ -14,7 +14,7 @@ from Robot import *
 from Simulator import *
 
 # create a 10 by 10 map with 200 landmarks
-landmarkTypes = [{"type":'laser', "n": 10}]
+landmarkTypes = [{"type":'laser', "n": 500}]
 mapScale = 10
 simMap = Map(mapScale, landmarkTypes)
 
@@ -25,7 +25,7 @@ simMap = Map(mapScale, landmarkTypes)
 # senseNoise = [0.001, 0.1 * pi / 180]  # distance, angle
 senseNoise = [0.1, 2 * pi / 180]  # distance, angle
 maxAngle = pi # this sensor can go 360 degrees
-maxDistance = 5 # 1 meter on a 10 by 10 map
+maxDistance = 0.5 # 1 meter on a 10 by 10 map
 sensorType = "laser"
 sensor = LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
 

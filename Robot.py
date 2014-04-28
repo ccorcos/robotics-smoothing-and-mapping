@@ -80,6 +80,10 @@ class Robot:
                     # wait()
                     lmNode = Node(lmPos, lmObs['sensorType'], lmObs['descriptor'])
                     self.graph.addNode(lmNode)
+                else:
+                    # update landmark guess as the average
+                    lmPos = sensor.deadReckon(self.pos,lmObs['obs'])
+                    lmNode.value = (lmNode.value + lmPos)/2.
                 # create an edge between the nodes
                 edge = ObservationEdge(sensor, lmObs['obs'], self.posNode, lmNode, "observation")
                 self.graph.addEdge(edge)

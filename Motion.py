@@ -64,8 +64,8 @@ class UnicycleModel:
 
         forwardVariance = self.noise[0]**2
         turnVariance = self.noise[1]**2
-        xVariance = abs(forwardVariance*cos(a+t) + turnVariance*sin(a+t))
-        yVariance = abs(forwardVariance*sin(a+t) + turnVariance*cos(a+t))
+        xVariance = abs(forwardVariance*cos(a+t)) + abs(f*turnVariance*sin(a+t))
+        yVariance = abs(forwardVariance*sin(a+t)) + abs(f*turnVariance*cos(a+t))
         aVariance = turnVariance
         return diag([xVariance, yVariance, aVariance])
         # return np.diag([abs(self.noise[0]**2 * cos(a)), abs(self.noise[0]**2 * sin(a)), self.noise[1]**2])

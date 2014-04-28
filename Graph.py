@@ -296,7 +296,7 @@ class Graph:
             pr(3, "idx", node.idx)
             pr(3, "value", node.value)
             pr(3, "dx", dxi)
-            node.value = node.value + dxi
+            node.value = node.value + dxi*0.5
             startIdx = startIdx + len(node.value)
 
 
