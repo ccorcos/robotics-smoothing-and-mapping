@@ -14,24 +14,26 @@ from Robot import *
 from Simulator import *
 
 # create a 10 by 10 map with 200 landmarks
-landmarkTypes = [{"type":'laser', "n": 5}]
+landmarkTypes = [{"type":'laser', "n": 10}]
 mapScale = 10
 simMap = Map(mapScale, landmarkTypes)
 
 # create a sensor to sense the landmarks on the map
 # 1 cm stdev => within 4cm 95% of the time
 # 5 degrees stdev => within 20 degrees 95% of the time
-senseNoise = [0.01, 1 * pi / 180]  # distance, angle
+# senseNoise = [0.01, 1 * pi / 180]  # distance, angle
 # senseNoise = [0.001, 0.1 * pi / 180]  # distance, angle
+senseNoise = [0.1, 2 * pi / 180]  # distance, angle
 maxAngle = pi # this sensor can go 360 degrees
-maxDistance = 3 # 1 meter on a 10 by 10 map
+maxDistance = 5 # 1 meter on a 10 by 10 map
 sensorType = "laser"
 sensor = LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
 
 
 # this robot will move like a unicycle
-motionNoise = [0.01, 1 * pi / 180]  # forward, turn 
+# motionNoise = [0.01, 1 * pi / 180]  # forward, turn 
 # motionNoise = [0.001, .1 * pi / 180]  # forward, turn 
+motionNoise = [0.05, 2 * pi / 180]  # forward, turn 
 unicycle = UnicycleModel(motionNoise)
 
 
@@ -67,6 +69,27 @@ def stepRobotObservations():
         if not traj:
             runRobot()
 
+def stepRobotMotion():
+    if yesno("Would you like to step through the robot motion?"):
+        trajName = raw_input("which trajectory: ")
+        traj = sim.stepThroughRobotMotion(robot, trajName)
+        if not traj:
+            runRobot()
+
+def stepRobotObservationsAndMotion():
+    if yesno("Would you like to step through the robot observations and motion?"):
+        trajName = raw_input("which trajectory: ")
+        traj = sim.stepThroughRobotObservationsAndMotion(robot, trajName)
+        if not traj:
+            runRobot()
+
+def stepRobotSAM():
+    if yesno("Would you like to step through SAM?"):
+        trajName = raw_input("which trajectory: ")
+        traj = sim.stepThroughSAM(robot, trajName)
+        if not traj:
+            runRobot()
+
 def main():
 
     pr(0,"Chet's SAM Algorithm")
@@ -76,16 +99,16 @@ def main():
     # print sensor.jacobianLandmark([0,0,0],[1,1])
     # wait()
 
-    # recordTraj()
-    # stepTraj()
-    # stepRobotGraph()
-    # stepRobotObservations()
+    recordTraj()
+    stepTraj()
+    stepRobotGraph()
+    stepRobotObservations()
+    stepRobotMotion()
+    stepRobotObservationsAndMotion()
+    stepRobotSAM()
     
-    # sim.stepThroughRobotGraph(robot, "quick")
-    # sim.stepThroughRobotObservations(robot, "quick")
-    # robot.simSense(simMap, [5,5,0])
-
-    sim.buildRobotGraph(robot, "quick")
+    # sim.stepThroughRobotObservationsAndMotion(robot, "quick")
+    # sim.stepThroughSAM(robot, "quick")
 
 
 if __name__ == "__main__":

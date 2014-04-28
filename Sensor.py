@@ -101,4 +101,13 @@ class LaserSensorSim:
         return array([[(w - x)/sqrt((w - x)**2 + (-y + z)**2), (-y + z)/sqrt((w - x)**2 + (-y + z)**2)], [(y - z)/((w - x)**2 + (-y + z)**2), (w - x)/((w - x)**2 + (-y + z)**2)]])
 
     def covariance(self):
+        # FIX: include obs in this covariance
+        # Actually, I think this is alright
+        
+        # obs = self.sense(pos, lm)
+        # d = obs[0]
+        # t = obs[1]
+        # dVariance = self.noise[0]**2
+        # tVariance = self.noise[1]**2
+
         return array([[self.noise[0] ** 2, 0], [0, self.noise[1] ** 2]])

@@ -65,8 +65,6 @@ def pr(level, *args, **kwargs):
     @result: nothing
     '''
 
-    # if "pretty" in kwargs:
-
     string = " ".join([pprint.pformat(arg) for arg in args])
     string = string.replace("'", "").replace('"', '')
     if level == 0:
@@ -100,6 +98,12 @@ def pr(level, *args, **kwargs):
     elif level == 2:
         print "   * " + string
     elif level == 3:
+        print "      > " + string
+    elif level == 4:
+        print "        = " + string
+    elif level == 5:
+        print "          | " + string
+    elif level == 100:
         lines = string.split("\n")
         for line in lines:
             print "      " + line

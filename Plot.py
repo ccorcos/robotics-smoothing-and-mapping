@@ -63,6 +63,56 @@ class Plot:
         traj = robot.trajectoryXY()
         self.drawTrajectory(traj, color=color)
 
+    def drawRobotAngle(self, robot, color="red"):
+        traj = robot.trajectory()
+        for pos in traj:
+            a = pos[2]
+            head = array([cos(a), sin(a)]) * 0.2
+            start = array(pos[0:2])
+            end = start + head
+            pts = array([start, end])
+            self.ax.plot(pts[:, 0],
+                         pts[:, 1],
+                         color=color)
+
+    def drawRobotMotion(self, robot, color="red", alpha= 0.5):
+        edges = robot.graph.getEdgesOfType("motion")
+        
+        for edge in edges:
+            pos0 = array(edge.node1.value)
+            pos1 = array(edge.node2.value)
+            cmd = edge.value
+            f = cmd[0]
+            t = cmd[1]
+
+            pos11 = edge.model.move(pos0, cmd)
+
+
+            xy0 = pos0[0:2]
+            xy11 = pos11[0:2]
+            a0 = pos0[2]
+            a11 = pos11[2]
+
+            arrow = np.array([xy0, xy11])
+
+            self.ax.plot(arrow[:, 0],
+                         arrow[:, 1],
+                         color=color,
+                         alpha=alpha)
+
+            motion = edge.model
+            forwardErr = motion.noise[0] * 4
+            turnErr = f * motion.noise[1] * 4
+
+            e = Ellipse(xy=xy11,
+                        width=forwardErr,
+                        height=turnErr,
+                        angle=(a11)  * 180 / pi,
+                        alpha=alpha,
+                        color=color)
+            self.ax.add_artist(e)
+
+
     def drawRobot(self, pos, color="red"):
         self.ax.scatter(pos[0],
                         pos[1],
@@ -99,6 +149,7 @@ class Plot:
             pos = array(edge.node1.value)
             lm = array(edge.model.deadReckon(pos, edge.value))
             xy = pos[0:2]
+            a = pos[2]
             d = edge.value[0]
             t = edge.value[1]
 
@@ -116,7 +167,7 @@ class Plot:
             e = Ellipse(xy=lm,
                         width=distErr,
                         height=angleErr,
-                        angle=t * 180 / pi,
+                        angle=(t+a)  * 180 / pi,
                         alpha=alpha,
                         color=color)
             self.ax.add_artist(e)

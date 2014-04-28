@@ -31,6 +31,7 @@ from pylab import *
 from utils import *
 from scipy.sparse.linalg import spsolve
 
+
 class Node:
 
     def __init__(self, value, nodeType, descriptor):
@@ -57,6 +58,7 @@ class MotionEdge:
         pos1 = self.node2.value
         cmd = self.value
         err = self.model.move(pos0, cmd) - pos1
+        err[2] = wrapAngle(err[2])
         return err
 
     def linearized(self):
@@ -72,12 +74,12 @@ class MotionEdge:
         cmd = self.value
 
         F = self.model.jacobianPosition(pos0, cmd)
-        G = eye(len(pos0))
+        G = -eye(len(pos0))
         err = self.error()
 
         # transform via covariance so we can do the L2 distance
         # as opposed to computing the mohalanobis distance
-        C = self.model.covariance(pos0)
+        C = self.model.covariance(pos0, cmd)
         Fm = mohalanobis(C, F)
         Gm = mohalanobis(C, G)
         a = mohalanobis(C, -err)
@@ -100,6 +102,7 @@ class ObservationEdge:
         lm = self.node2.value
         obs = self.value
         err = self.model.sense(pos, lm) - obs
+        err[1] = wrapAngle(err[1])
         return err
 
     def linearized(self):
@@ -139,13 +142,14 @@ class PriorEdge:
     def error(self):
         """The error associated with this edge: f(x_0, u_1) - x_1"""
         err = array(self.node1.value) - array(self.value)
+        err[2] = wrapAngle(err[2])
         return err
 
     def linearized(self):
         # transform via covariance so we can do the L2 distance
         # as opposed to computing the mohalanobis distance
         C = self.covariance
-        J = mohalanobis(C,eye(len(self.value)))
+        J = mohalanobis(C,-eye(len(self.value)))
         return J,J,-self.error()
 
 class Graph:
@@ -160,11 +164,25 @@ class Graph:
         node.idx = self.nodeIdx
         self.nodeIdx = self.nodeIdx + 1
         self.nodes.append(node)
+        # pr(2,"adding node")
+        # pr(3,"type", node.nodeType)
+        # pr(3,"value", node.value)
+        # pr(3,"idx", node.idx)
 
     def addEdge(self, edge):
         edge.idx = self.edgeIdx
         self.edgeIdx = self.edgeIdx + 1
         self.edges.append(edge)
+        # pr(2,"adding edge")
+        # pr(3,"type", edge.edgeType)
+        # pr(3,"value", edge.value)
+        # pr(3,"idx", edge.idx)
+        # pr(3, 'error', edge.error())
+        # pr(4, "from value", edge.node1.value)
+        # pr(4, 'from idx', edge.node1.idx)
+        # pr(4, "to value", edge.node2.value)
+        # pr(4, 'to idx', edge.node2.idx)
+        
 
     def getNodesOfType(self, nodeType):
         return filter(lambda x: x.nodeType == nodeType, self.nodes)
@@ -207,11 +225,14 @@ class Graph:
             # print edge.edgeType
             # print edge.node1.idx
             # print edge.node2.idx
+            
             idxEdge = edge.idx
             idxNode1 = edge.node1.idx
             idxNode2 = edge.node2.idx
 
             J1, J2, bi = edge.linearized()
+
+
             # print J1
             # print J2
             # print bi
@@ -226,6 +247,20 @@ class Graph:
             # print S
             # print b 
             # wait()
+            
+            # pr(2, "linearizing edge")
+            # pr(3,"type", edge.edgeType)
+            # pr(3,"value", edge.value)
+            # pr(3,"idx", edge.idx)
+            # pr(3, 'error', edge.error())
+            # pr(4, "from value", edge.node1.value)
+            # pr(4, 'from idx', edge.node1.idx)
+            # pr(4, "to value", edge.node2.value)
+            # pr(4, 'to idx', edge.node2.idx)
+            # pr(4, "J1", J1)
+            # pr(4, "J2", J2)
+            # pr(4, "bi", bi)
+            # wait()
 
         A = flattenMatrix(A)
         b = flattenVector(b)
@@ -234,6 +269,11 @@ class Graph:
         # print b.shape
 
         dx = inner(pinv(A),b)
+
+        # pr(2, "b", b)
+        # pr(2, "dx", dx)
+        # pr(2, A)
+        # wait()
 
         # print A
         # print b
@@ -251,7 +291,12 @@ class Graph:
             if node.idx != i:
                 ex("ERROR: wrong node!")
             dxi = dx[startIdx:startIdx+len(node.value)]
-            node.value = node.value + dxi*0.1 # or else this goes unstable!
+            pr(2, "update node")
+            pr(3, "type", node.nodeType)
+            pr(3, "idx", node.idx)
+            pr(3, "value", node.value)
+            pr(3, "dx", dxi)
+            node.value = node.value + dxi
             startIdx = startIdx + len(node.value)
 
 

@@ -22,6 +22,7 @@ class UnicycleModel:
         turnNoise = gauss(0, self.noise[1])
 
         a = a + (turn + turnNoise)
+        a = wrapAngle(a)
         x = x + cos(a) * (forward + forwardNoise)
         y = y + sin(a) * (forward + forwardNoise)
         return array([x, y, a])
@@ -38,6 +39,7 @@ class UnicycleModel:
         turn = cmd[1]
 
         a = a + turn
+        a = wrapAngle(a)
         x = x + cos(a) * forward
         y = y + sin(a) * forward
         return array([x, y, a])
@@ -54,6 +56,18 @@ class UnicycleModel:
         t = cmd[1]
         return array([[1, 0, -f*sin(a)], [0, 1, f*cos(a)], [0, 0, 1]])
 
-    def covariance(self, pos):
-        a = pos[2]
-        return np.diag([abs(self.noise[0]**2 * cos(a)), abs(self.noise[0]**2 * sin(a)), self.noise[1]**2])
+    def covariance(self, pos, cmd):
+        # FIX: include pos in this covariance
+        # f = cmd[0]
+        # t = cmd[1]
+        # a = pos[2]
+
+        # forwardVariance = self.noise[0]**2
+        # turnVariance = self.noise[1]**2
+        # xVariance = abs(forwardVariance*cos(a+t) + turnVariance*sin(a+t))
+        # yVariance = abs(forwardVariance*sin(a+t) + turnVariance*cos(a+t))
+        # aVariance = turnVariance
+        # return diag([xVariance, yVariance, aVariance])
+        # return np.diag([abs(self.noise[0]**2 * cos(a)), abs(self.noise[0]**2 * sin(a)), self.noise[1]**2])
+        return np.diag([self.noise[0]**2, self.noise[0]**2, self.noise[1]**2])
+
