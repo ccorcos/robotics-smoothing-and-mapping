@@ -228,7 +228,7 @@ class Simulator:
         if not commands:
             return False
 
-        robot.reset()
+        # robot.reset()
         initialPosition = robot.position()
         
         # the real positions of the robot
@@ -247,11 +247,25 @@ class Simulator:
             # sense
             robot.simSense(self.simMap, pos)
 
-        self.plot.new("Building Robot Graph")
-        self.plot.drawMap(self.simMap)
-        self.plot.drawTrajectory(positions, "blue")
-        self.plot.drawRobotGraph(robot)
-        self.plot.show()
+        # self.plot.new("Building Robot Graph")
+        # self.plot.drawMap(self.simMap)
+        # self.plot.drawTrajectory(positions, "blue")
+        # self.plot.drawRobotGraph(robot)
+        # self.plot.show()
+        # wait()
+        
+        while True:
+
+            robot.graph.optimizationStep()    
+
+            self.plot.new("Building Robot Graph")
+            self.plot.drawMap(self.simMap)
+            self.plot.drawTrajectory(positions, "blue")
+            self.plot.drawRobotGraph(robot)
+            self.plot.show()
+
+            wait()
+
 
         return True
 

@@ -105,6 +105,3 @@ def pr(level, *args, **kwargs):
             print "      " + line
     else:
         print "? " + string
-
-def mohalanobis(covariance, M):
-    return inner(sqrt(covariance), X)

@@ -32,6 +32,10 @@ class Robot:
         node = Node(initialPosition, "position", 0)
         self.graph.addNode(node)
 
+        # add a prior
+        edge = PriorEdge([0,0,0], node, np.diag([motion.noise[0]**2, motion.noise[0]**2, motion.noise[1]**2]))
+        self.graph.addEdge(edge)
+
         # keep track of the most recent position for dead reakoning
         self.pos = initialPosition
         self.posNode = node # node of the current position

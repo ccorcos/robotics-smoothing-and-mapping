@@ -62,9 +62,16 @@ def main():
 
     print "Chet's SAM Algorithm\n"
 
-    recordTraj()
-    stepTraj()
-    runRobot()
+    # print unicycle.jacobianPosition([0,0,1],[1,1])
+    # print sensor.jacobianPosition([0,0,0],[1,1])
+    # print sensor.jacobianLandmark([0,0,0],[1,1])
+    # wait()
+
+    # recordTraj()
+    # stepTraj()
+    # runRobot()
+    
+    traj = sim.runRobotThoughTrajectory(robot, 'straight')
 
 if __name__ == "__main__":
     main()

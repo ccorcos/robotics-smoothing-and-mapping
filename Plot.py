@@ -80,11 +80,18 @@ class Plot:
             xy1 = edge.node1.value[0:2]
             xy2 = edge.node2.value[0:2]
             if edge.edgeType == "observation":
-                color = "green"
-            arrow = np.array([xy1,xy2])
-            self.ax.plot(arrow[:, 0],
-                         arrow[:, 1],
-                         color=color)
+                arrow = np.array([xy1,xy2])
+                self.ax.plot(arrow[:, 0],
+                             arrow[:, 1],
+                             color="green",
+                             alpha=0.5,
+                             zorder=-1000000)
+            else:
+                arrow = np.array([xy1,xy2])
+                self.ax.plot(arrow[:, 0],
+                             arrow[:, 1],
+                             color=color,
+                             zorder=1000000)
         
 
     # def drawRobotMap(self, robot, types):

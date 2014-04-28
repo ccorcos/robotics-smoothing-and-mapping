@@ -52,8 +52,7 @@ class UnicycleModel:
         a = pos[2]
         f = cmd[0]
         t = cmd[1]
-        F = np.array([[1, 0, f * sin(a)], [0, 1, f * cos(a)], [0, 0, 1]])
-        return F
+        return array([[1, 0, -f*sin(a)], [0, 1, f*cos(a)], [0, 0, 1]])
 
     def covariance(self, pos):
         a = pos[2]

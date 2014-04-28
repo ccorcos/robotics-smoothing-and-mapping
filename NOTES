@@ -12,6 +12,7 @@ edge error jacobians w.r.t. each node
 TODO:
 
 graph optimization!
+    get the jacobians to work
 
 record traj with robots
 multiple sensors
