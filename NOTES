@@ -12,7 +12,13 @@ edge error jacobians w.r.t. each node
 TODO:
 
 graph optimization!
-    get the jacobians to work
+    Jacobians all look good now.
+    check with spiral and short
+
+    look like maybe an issue with the landmarks not updating
+
+    look at the deltas, make sure they're updated properly
+    colamd and QR to solve
 
 record traj with robots
 multiple sensors

@@ -33,7 +33,7 @@ class Robot:
         self.graph.addNode(node)
 
         # add a prior
-        edge = PriorEdge([0,0,0], node, np.diag([motion.noise[0]**2, motion.noise[0]**2, motion.noise[1]**2]))
+        edge = PriorEdge(initialPosition, node, np.diag([1e-20,1e-20,1e-20]))
         self.graph.addEdge(edge)
 
         # keep track of the most recent position for dead reakoning
@@ -74,6 +74,10 @@ class Robot:
                     # if this landmark hasn't been observed before
                     # create a new node
                     lmPos = sensor.deadReckon(self.pos,lmObs['obs'])
+                    # print self.pos
+                    # print lmPos
+                    # print lmObs['obs']
+                    # wait()
                     lmNode = Node(lmPos, lmObs['sensorType'], lmObs['descriptor'])
                     self.graph.addNode(lmNode)
                 # create an edge between the nodes
@@ -82,11 +86,16 @@ class Robot:
 
 
     def reset(self):
+        # initial position
         node = self.graph.nodes[0]
+        # prior
+        edge = self.graph.edges[0]
+
         self.posNode = node
         self.pos = node.value
         self.graph = Graph()
         self.graph.addNode(node)
+        self.graph.addEdge(edge)
 
 
     def trajectory(self):

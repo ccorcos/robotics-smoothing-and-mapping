@@ -56,7 +56,12 @@ class Plot:
         traj = np.array(traj)
         self.ax.plot(traj[:, 0],
                      traj[:, 1],
-                     color=color)
+                     color=color,
+                     zorder=10000000)
+
+    def drawRobotTrajectory(self, robot, color="red"):
+        traj = robot.trajectoryXY()
+        self.drawTrajectory(traj, color=color)
 
     def drawRobot(self, pos, color="red"):
         self.ax.scatter(pos[0],
@@ -73,7 +78,7 @@ class Plot:
                      pts[:, 1],
                      color=color)
 
-    def drawRobotGraph(self, robot, color="red"):
+    def drawRobotGraph(self, robot, color="red", alpha=0.5):
         traj = robot.trajectoryXY()
         self.drawTrajectory(traj)
         for edge in robot.graph.edges:
@@ -83,15 +88,38 @@ class Plot:
                 arrow = np.array([xy1,xy2])
                 self.ax.plot(arrow[:, 0],
                              arrow[:, 1],
-                             color="green",
-                             alpha=0.5,
-                             zorder=-1000000)
-            else:
-                arrow = np.array([xy1,xy2])
-                self.ax.plot(arrow[:, 0],
-                             arrow[:, 1],
                              color=color,
-                             zorder=1000000)
+                             alpha=alpha,
+                             zorder=-1000000)
+
+    def drawRobotObservations(self, robot, color="red", alpha=0.5):
+        edges = robot.graph.getEdgesOfType("observation")
+        
+        for edge in edges:
+            pos = array(edge.node1.value)
+            lm = array(edge.model.deadReckon(pos, edge.value))
+            xy = pos[0:2]
+            d = edge.value[0]
+            t = edge.value[1]
+
+            arrow = np.array([xy, lm])
+
+            self.ax.plot(arrow[:, 0],
+                         arrow[:, 1],
+                         color=color,
+                         alpha=alpha)
+
+            sensor = edge.model
+            distErr = sensor.noise[0] * 4
+            angleErr = d * sensor.noise[1] * 4
+
+            e = Ellipse(xy=lm,
+                        width=distErr,
+                        height=angleErr,
+                        angle=t * 180 / pi,
+                        alpha=alpha,
+                        color=color)
+            self.ax.add_artist(e)
         
 
     # def drawRobotMap(self, robot, types):
@@ -103,40 +131,4 @@ class Plot:
     #                         marker=types[key]["marker"],
     #                         s=types[key]["scale"])
 
-    # def drawRobotTrajectory(self, robot, color):
-    #     traj = robot.trajectoryXY()
-    #     self.drawTrajectory(traj, color)
-
-    
-
-    # def drawRobotObservation(self, robot, pos, colors):
-    #     st = robot.state[-1]
-
-    #     xy = np.array(pos[0:2])
-    #     a = np.array(pos[2])
-    #     for ob in st['obs']:
-    #         d = ob["sensor pos"][0]
-    #         t = ob["sensor pos"][1]
-
-    #         lm = np.array([d * cos(a + t), d * sin(a + t)])
-
-    #         arrow = np.array([xy, xy + lm])
-
-    #         self.ax.plot(arrow[:, 0],
-    #                      arrow[:, 1],
-    #                      color=colors[ob["type"]])
-
-    #         sensor = robot.sensorOfType(ob["type"])
-
-    #         distErr = sensor.noise[0] * 4
-    #         angleErr = d * sensor.noise[1] * 4
-
-    #         e = Ellipse(xy=xy + lm,
-    #                     width=distErr,
-    #                     height=angleErr,
-    #                     angle=t * 180 / pi,
-    #                     alpha=0.5,
-    #                     color=colors[ob["type"]])
-    #         self.ax.add_artist(e)
-
-    
+  

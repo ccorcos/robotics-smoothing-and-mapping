@@ -32,8 +32,8 @@ class LaserSensorSim:
                 d = norm(c)  # distance to the landmark
 
                 # t = arctan2(y,x)
-                t = arctan2(c[1], c[0])
-
+                t = arctan2(c[1], c[0]) - a
+                t = wrapAngle(t)
 
                 #  check the sensor constraints
                 if d < self.maxDistance and abs(t) <= self.maxAngle:
@@ -64,7 +64,8 @@ class LaserSensorSim:
         # t = -sign(cross(c, b) / d) * arccos(dot(c, b) / d)
 
         # t = arctan2(y,x)
-        t = arctan2(c[1], c[0])
+        t = arctan2(c[1], c[0]) - a
+        t = wrapAngle(t)
 
         return array([d, t])
 
@@ -85,12 +86,7 @@ class LaserSensorSim:
         w = lm[0]  # lmx
         z = lm[1]  # lmy
 
-        return array([[(-w + x) / sqrt((w - x) ** 2 + (-y + z) ** 2),
-                    (y - z) / sqrt((w - x) ** 2 + (-y + z) ** 2),
-                    0],
-                    [-(-y + z) / ((w - x) ** 2 + (-y + z) ** 2),
-                     -(-w + x) / ((w - x) ** 2 + (-y + z) ** 2),
-                     0]])
+        return array([[(-w + x)/sqrt((w - x)**2 + (-y + z)**2), (y - z)/sqrt((w - x)**2 + (-y + z)**2), 0], [-(y - z)/((w - x)**2 + (-y + z)**2), -(w - x)/((w - x)**2 + (-y + z)**2), -1]])
 
     def jacobianLandmark(self, pos, lm):
         """The jacobian with respect to the landmark, dh(x,l)/dl"""
@@ -102,10 +98,7 @@ class LaserSensorSim:
         w = lm[0]  # lmx
         z = lm[1]  # lmy
 
-        return array([[(w - x) / sqrt((w - x) ** 2 + (-y + z) ** 2),
-                    (-y + z) / sqrt((w - x) ** 2 + (-y + z) ** 2)],
-                    [(-y + z) / ((w - x) ** 2 + (-y + z) ** 2),
-                     (-w + x) / ((w - x) ** 2 + (-y + z) ** 2)]])
+        return array([[(w - x)/sqrt((w - x)**2 + (-y + z)**2), (-y + z)/sqrt((w - x)**2 + (-y + z)**2)], [(y - z)/((w - x)**2 + (-y + z)**2), (w - x)/((w - x)**2 + (-y + z)**2)]])
 
     def covariance(self):
         return array([[self.noise[0] ** 2, 0], [0, self.noise[1] ** 2]])

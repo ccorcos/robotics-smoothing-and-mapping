@@ -33,8 +33,7 @@ xy = Matrix([x,y])
 lm = Matrix([w,z])
 c = lm-xy
 d = c.norm()
-
-t = atan2(w-x,z-y)
+t = atan2(z-y,w-x) - a
 print t
 print jacobian([d,t],[x,y,a])
 print jacobian([d,t],[w,z])

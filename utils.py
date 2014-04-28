@@ -105,3 +105,12 @@ def pr(level, *args, **kwargs):
             print "      " + line
     else:
         print "? " + string
+
+from pylab import *
+
+def wrapAngle(ang):
+    while ang > pi:
+        ang = ang - 2*pi
+    while ang <= -pi:
+        ang = ang + 2*pi
+    return ang

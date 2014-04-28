@@ -138,14 +138,15 @@ class PriorEdge:
 
     def error(self):
         """The error associated with this edge: f(x_0, u_1) - x_1"""
-        err = self.node1.value - self.value
+        err = array(self.node1.value) - array(self.value)
         return err
 
     def linearized(self):
         # transform via covariance so we can do the L2 distance
         # as opposed to computing the mohalanobis distance
         C = self.covariance
-        return C,C, [0.]*len(self.value)
+        J = mohalanobis(C,eye(len(self.value)))
+        return J,J,-self.error()
 
 class Graph:
 
@@ -199,7 +200,7 @@ class Graph:
         b = emptyList([len(self.edges)])
 
         # print the sparsity
-        # S = emptyList([len(self.edges), len(self.nodes)])
+        S = emptyList([len(self.edges), len(self.nodes)])
 
         for edge in self.edges:
             # print edge.idx
@@ -219,13 +220,13 @@ class Graph:
             A[idxEdge][idxNode2] = J2
             b[idxEdge] = bi
 
-            # S[idxEdge][idxNode1] = 1
-            # S[idxEdge][idxNode2] = 1
+            S[idxEdge][idxNode1] = 1
+            S[idxEdge][idxNode2] = 1
+            # print A
+            # print S
+            # print b 
+            # wait()
 
-        # print array(S)
-        # wait()
-
-        
         A = flattenMatrix(A)
         b = flattenVector(b)
 
@@ -234,8 +235,9 @@ class Graph:
 
         dx = inner(pinv(A),b)
 
-        # print A[0:10,0:10]
+        # print A
         # print b
+        # print dx
         # wait()
 
         # Now update the graph values
@@ -249,7 +251,7 @@ class Graph:
             if node.idx != i:
                 ex("ERROR: wrong node!")
             dxi = dx[startIdx:startIdx+len(node.value)]
-            node.value = node.value + dxi
+            node.value = node.value + dxi*0.1 # or else this goes unstable!
             startIdx = startIdx + len(node.value)
 
 
@@ -334,4 +336,5 @@ def flattenVector(A):
 
 def mohalanobis(covariance, M):
     # inner(a,b) = a*b'
-    return inner(sqrt(covariance).T, M.T)
+    return inner(pinv(sqrt(covariance)).T, M.T)
+    # return M

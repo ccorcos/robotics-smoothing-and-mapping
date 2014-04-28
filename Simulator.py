@@ -166,7 +166,7 @@ class Simulator:
         else:
             return False
 
-    def stepRobotThoughTrajectory(self, robot, trajName):
+    def stepThroughRobotGraph(self, robot, trajName):
         
         terminal = CommandLineApp()
 
@@ -188,7 +188,9 @@ class Simulator:
         self.plot.start("Building Robot Graph")
         self.plot.drawMap(self.simMap)
         self.plot.drawTrajectory(positions, "blue")
-        self.plot.drawRobotGraph(robot)
+        self.plot.drawRobotGraph(robot, "green", 0.2)
+        self.plot.drawRobotTrajectory(robot, "red")
+
         self.plot.draw()
 
         terminal.clearUpTo(2)
@@ -210,7 +212,8 @@ class Simulator:
             self.plot.clear()
             self.plot.drawMap(self.simMap)
             self.plot.drawTrajectory(positions, "blue")
-            self.plot.drawRobotGraph(robot)
+            self.plot.drawRobotGraph(robot, "green", 0.2)
+            self.plot.drawRobotTrajectory(robot, "red")
             self.plot.draw()
 
         self.plot.clear()
@@ -220,15 +223,14 @@ class Simulator:
         terminal.doneCurses()
         return True
 
-
-    def runRobotThoughTrajectory(self, robot, trajName):
+    def buildRobotGraph(self, robot, trajName):
         
         commands = self.loadTrajectory(trajName)
 
         if not commands:
             return False
 
-        # robot.reset()
+        robot.reset()
         initialPosition = robot.position()
         
         # the real positions of the robot
@@ -247,26 +249,85 @@ class Simulator:
             # sense
             robot.simSense(self.simMap, pos)
 
-        # self.plot.new("Building Robot Graph")
-        # self.plot.drawMap(self.simMap)
-        # self.plot.drawTrajectory(positions, "blue")
-        # self.plot.drawRobotGraph(robot)
-        # self.plot.show()
-        # wait()
+
+        self.plot.new("Robot Graph")
+        self.plot.drawMap(self.simMap)
+        self.plot.drawTrajectory(positions, "blue")
+        self.plot.drawRobotTrajectory(robot, "red")
+        self.plot.drawRobotGraph(robot, "yellow", 0.8)
+        self.plot.drawRobotObservations(robot, "green", 0.2)
+        self.plot.show()
+        wait()
+
         
         while True:
 
             robot.graph.optimizationStep()    
 
-            self.plot.new("Building Robot Graph")
+            self.plot.new("Robot Graph")
             self.plot.drawMap(self.simMap)
             self.plot.drawTrajectory(positions, "blue")
-            self.plot.drawRobotGraph(robot)
+            self.plot.drawRobotTrajectory(robot, "red")
+            self.plot.drawRobotGraph(robot, "yellow", 0.8)
+            self.plot.drawRobotObservations(robot, "green", 0.2)
             self.plot.show()
-
             wait()
 
 
         return True
 
-    
+    def stepThroughRobotObservations(self, robot, trajName):
+        
+        terminal = CommandLineApp()
+
+        commands = self.loadTrajectory(trajName)
+
+        if not commands:
+            return False
+
+        robot.reset()
+        initialPosition = robot.position()
+        
+        # the real positions of the robot
+        positions = [initialPosition]
+        pos = initialPosition
+
+        robot.simSense(self.simMap, pos)
+
+        # start an interactive plot
+        self.plot.start("Drawing robot trajectory and Observations")
+        self.plot.drawMap(self.simMap)
+        self.plot.drawTrajectory(positions, "blue")
+        self.plot.drawRobotTrajectory(robot, "red")
+        self.plot.drawRobotObservations(robot, "green", 0.2)
+        self.plot.draw()
+
+        terminal.clearUpTo(2)
+        terminal.println("Press any key to step...")
+        terminal.noecho()
+
+        for cmd in commands:
+            key = terminal.keyPress()
+
+            # move the robot. the robot updates its graph
+            robot.move(cmd)
+            # update where the robot really is due to errors
+            pos = robot.motion.simMove(pos, cmd)
+            positions.append(pos)
+            # sense
+            robot.simSense(self.simMap, pos)
+
+            # update plot
+            self.plot.clear()
+            self.plot.drawMap(self.simMap)
+            self.plot.drawTrajectory(positions, "blue")
+            self.plot.drawRobotTrajectory(robot, "red")
+            self.plot.drawRobotObservations(robot,"green", 0.2)
+            self.plot.draw()
+
+        self.plot.clear()
+        self.plot.stop("Building Robot Graph")
+        terminal.clearUpTo(2)
+        terminal.echo()
+        terminal.doneCurses()
+        return True
