@@ -265,9 +265,9 @@ class Graph:
         A = flattenMatrix(A)
         b = flattenVector(b)
 
-        # print A.shape
-        # print b.shape
-
+        A = vstack((A, ones(A.shape[1])))
+        b = hstack((b, [0]))
+    
         dx = inner(pinv(A),b)
 
         # pr(2, "b", b)
@@ -291,12 +291,12 @@ class Graph:
             if node.idx != i:
                 ex("ERROR: wrong node!")
             dxi = dx[startIdx:startIdx+len(node.value)]
-            pr(2, "update node")
-            pr(3, "type", node.nodeType)
-            pr(3, "idx", node.idx)
-            pr(3, "value", node.value)
-            pr(3, "dx", dxi)
-            node.value = node.value + dxi*0.5
+            # pr(2, "update node")
+            # pr(3, "type", node.nodeType)
+            # pr(3, "idx", node.idx)
+            # pr(3, "value", node.value)
+            # pr(3, "dx", dxi)
+            node.value = node.value + dxi
             startIdx = startIdx + len(node.value)
 
 
