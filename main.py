@@ -14,7 +14,7 @@ from Robot import *
 from Simulator import *
 
 # create a 10 by 10 map with 200 landmarks
-landmarkTypes = [{"type":'laser1', "n": 10}, {"type":'laser2', "n": 10}, {"type":'laser3', "n": 10}]
+landmarkTypes = [{"type":'laser1', "n": 20}, {"type":'laser2', "n": 10}, {"type":'laser3', "n": 10}]
 mapScale = 10
 simMap = Map(mapScale, landmarkTypes)
 
@@ -25,18 +25,18 @@ simMap = Map(mapScale, landmarkTypes)
 # senseNoise = [0.001, 0.1 * pi / 180]  # distance, angle
 senseNoise = [0.01, 1 * pi / 180]  # distance, angle
 maxAngle = pi/2. # this sensor can go 360 degrees
-maxDistance = 1 # 1 meter on a 10 by 10 map
+maxDistance = 3 # 1 meter on a 10 by 10 map
 sensorType = "laser1"
 sensor1 = LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
 
 senseNoise = [0.5, 10 * pi / 180]  # distance, angle
-maxAngle = pi # this sensor can go 360 degrees
+maxAngle = pi/4. # this sensor can go 360 degrees
 maxDistance = 8 # 1 meter on a 10 by 10 map
 sensorType = "laser2"
 sensor2= LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
 
 senseNoise = [0.001, 0.1 * pi / 180]  # distance, angle
-maxAngle = 15.*pi/180. # this sensor can go 360 degrees
+maxAngle = pi/4. # this sensor can go 360 degrees
 maxDistance = 10 # 1 meter on a 10 by 10 map
 sensorType = "laser3"
 sensor3= LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
@@ -47,14 +47,21 @@ sensor3= LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
 # motionNoise = [0.01, 1 * pi / 180]  # forward, turn 
 # motionNoise = [0.001, .1 * pi / 180]  # forward, turn 
 motionNoise = [0.05, 2 * pi / 180]  # forward, turn 
-unicycle = UnicycleModel(motionNoise)
+unicycle1 = UnicycleModel(motionNoise)
 
 
 # create the robot
-initialPosition = [5, 5, 0]  # x, y, angle
-robot = Robot( [sensor1, sensor3], unicycle, initialPosition)
+initialPosition1 = [8, 8, -2]  # x, y, angle
+robot1 = Robot( [sensor1, sensor3], unicycle1, initialPosition1, "robot1")
 
-sim = Simulator(simMap, [robot])
+
+initialPosition2 = [2, 2, 1]  # x, y, angle
+motionNoise = [0.1, 5 * pi / 180]  # forward, turn 
+unicycle2 = UnicycleModel(motionNoise)
+robot2 = Robot( [sensor1, sensor2], unicycle2, initialPosition2, "robot2")
+
+
+sim = Simulator(simMap, [robot1, robot2])
 
 
 def recordTraj():
@@ -73,42 +80,43 @@ def stepRobotGraph():
         trajName = raw_input("which trajectory: ")
         traj = sim.stepThroughRobotGraph(robot, trajName)
         if not traj:
-            runRobot()
+            stepRobotGraph()
 
 def stepRobotObservations():
     if yesno("Would you like to step through the robot observations?"):
         trajName = raw_input("which trajectory: ")
         traj = sim.stepThroughRobotObservations(robot, trajName)
         if not traj:
-            runRobot()
+            stepRobotObservations()
 
 def stepRobotMotion():
     if yesno("Would you like to step through the robot motion?"):
         trajName = raw_input("which trajectory: ")
         traj = sim.stepThroughRobotMotion(robot, trajName)
         if not traj:
-            runRobot()
+            stepRobotMotion()
 
 def stepRobotObservationsAndMotion():
     if yesno("Would you like to step through the robot observations and motion?"):
         trajName = raw_input("which trajectory: ")
         traj = sim.stepThroughRobotObservationsAndMotion(robot, trajName)
         if not traj:
-            runRobot()
+            stepRobotObservationsAndMotion()
 
 def stepRobotSAM():
     if yesno("Would you like to step through SAM?"):
         trajName = raw_input("which trajectory: ")
         traj = sim.stepThroughSAM(robot, trajName)
         if not traj:
-            runRobot()
+            stepRobotSAM()
 
 def stepIncrementalSAM():
     if yesno("Would you like to step through incremental SAM?"):
         trajName = raw_input("which trajectory: ")
         traj = sim.stepIncrementalSAM(robot, trajName)
         if not traj:
-            runRobot()
+            stepIncrementalSAM()
+
 
 def main():
 
@@ -119,14 +127,27 @@ def main():
     # print sensor.jacobianLandmark([0,0,0],[1,1])
     # wait()
 
-    recordTraj()
-    stepTraj()
-    stepRobotGraph()
-    stepRobotObservations()
-    stepRobotMotion()
-    stepRobotObservationsAndMotion()
-    stepRobotSAM()
-    stepIncrementalSAM()
+    # recordTraj()
+    # stepTraj()
+    # stepRobotGraph()
+    # stepRobotObservations()
+    # stepRobotMotion()
+    # stepRobotObservationsAndMotion()
+    # stepRobotSAM()
+    # stepIncrementalSAM()
+    
+
+    # multiple robot SAM
+    # pr(1,"recording both robot trajectories")
+    # sim.recordTrajectory(unicycle1, initialPosition1)
+    # sim.recordTrajectory(unicycle2, initialPosition2)
+    
+    robot1.graph.addNode(robot2.graph.nodes[0])
+    robot1.graph.addEdge(robot2.graph.edges[0])
+    robot2.graph = robot1.graph
+
+    sim.stepMultiRobotIncrementalSAM([robot1, robot2], ["topright", "bottomleft"])
+
     
     # sim.stepThroughRobotObservationsAndMotion(robot, "quick")
     # sim.stepThroughSAM(robot, "quick")

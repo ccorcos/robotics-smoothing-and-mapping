@@ -12,17 +12,17 @@ def colorAlpha(name):
     cm = get_cmap('gist_rainbow')
     if name == "laser1":
         color = cm(1. / 3.)
-        alpha = 0.2
+        alpha = 0.5
         zorder = -1
         return color, alpha, zorder
     elif name == "laser2":
         color = cm(2. / 3.)
-        alpha = 0.05
+        alpha = 0.01
         zorder = -10000000
         return color, alpha, zorder
     elif name == "laser3":
         color = cm(3. / 3.)
-        alpha = 0.9
+        alpha = 0.1
         zorder = -1
         return color, alpha, zorder
 

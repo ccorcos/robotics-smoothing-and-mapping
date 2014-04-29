@@ -22,14 +22,16 @@ from Graph import *
 
 class Robot:
 
-    def __init__(self, sensors, motion, initialPosition):
+    def __init__(self, sensors, motion, initialPosition, name):
         self.sensors = sensors
         self.motion = motion
         # initialize the graph
         self.graph = Graph()
+        self.name = name
 
         # create a first node for the initial position
         node = Node(initialPosition, "position", 0)
+        node.robot = self.name
         self.graph.addNode(node)
 
         # add a prior
@@ -47,6 +49,7 @@ class Robot:
         # create a new node for the next position
         # the descriptor is the index in time
         nextPosNode = Node(nextPos, "position", self.posNode.descriptor + 1)
+        nextPosNode.robot = self.name
         self.graph.addNode(nextPosNode)
         # create a new edge between them
         edge = MotionEdge(self.motion, cmd, self.posNode, nextPosNode, "motion")
@@ -109,7 +112,10 @@ class Robot:
         return array(traj)
 
     def trajectoryXY(self):
-        traj = self.trajectory()
+        positions = filter(lambda x: x.nodeType == "position" and x.robot == self.name, self.graph.nodes)
+        sortedPos = sorted(positions, key=lambda x: x.descriptor)
+        traj = map(lambda x: x.value, sortedPos)
+        traj = array(traj)
         return traj[:, 0:2]  # hack off the angle
 
     def position(self):

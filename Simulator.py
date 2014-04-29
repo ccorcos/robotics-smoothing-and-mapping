@@ -530,3 +530,89 @@ class Simulator:
         self.plot.show()
 
         return True
+
+    def stepMultiRobotIncrementalSAM(self, robots, trajNames):
+        
+        pr(0, "Step Through SAM")
+
+        commands0 = self.loadTrajectory(trajNames[0])
+        commands1 = self.loadTrajectory(trajNames[1])
+
+        robot0 = robots[0]
+        robot1 = robots[1]
+        # robot0.reset()
+        initialPosition0 = robot0.graph.nodes[0].value
+
+        # robot1.reset()
+        initialPosition1 = robot0.graph.nodes[1].value
+        
+        # the real positions of the robot
+        positions0 = [initialPosition0]
+        pos0 = initialPosition0
+
+        positions1 = [initialPosition1]
+        pos1 = initialPosition1
+
+        batch = 50
+
+        i = 0
+        robot0.simSense(self.simMap, pos0)
+        robot1.simSense(self.simMap, pos1)
+        
+        for j in range(max(len(commands0), len(commands1))):
+            i = i+1
+            if j < len(commands0):
+                # move the robot. the robot updates its graph
+                robot0.move(commands0[j])
+                # update where the robot really is due to errors
+                pos0 = robot0.motion.simMove(pos0, commands0[j])
+                positions0.append(pos0)
+                # sense
+                robot0.simSense(self.simMap, pos0)
+            if j < len(commands1):
+                # move the robot. the robot updates its graph
+                robot1.move(commands1[j])
+                # update where the robot really is due to errors
+                pos1 = robot1.motion.simMove(pos1, commands1[j])
+                positions1.append(pos1)
+                # sense
+                robot1.simSense(self.simMap, pos1)
+            
+            if i == batch:
+                i = 0
+                robot0.graph.optimize(0.2)
+                robot1.graph.optimize(0.2)
+                self.plot.new("Robot Graph")
+                self.plot.drawMap(self.simMap)
+                self.plot.drawTrajectory(positions0, "blue")
+                self.plot.drawTrajectory(positions1, "blue")
+                self.plot.drawRobotTrajectory(robot0, "red")
+                self.plot.drawRobotTrajectory(robot1, "red")
+                self.plot.drawRobotGraph(robot0, "yellow", 0.6)
+                self.plot.drawRobotGraph(robot1, "yellow", 0.6)
+                self.plot.drawRobotObservations(robot0, "green", 0.2)
+                self.plot.drawRobotObservations(robot1, "green", 0.2)
+                self.plot.drawRobotAngle(robot0,"orange")
+                self.plot.drawRobotAngle(robot1,"orange")
+                self.plot.show()
+                wait()
+
+        pr(1, "last")
+        robot0.graph.optimize(0.2)
+        robot1.graph.optimize(0.2)
+        pr(1, "done")
+        self.plot.new("Robot Graph")
+        self.plot.drawMap(self.simMap)
+        self.plot.drawTrajectory(positions0, "blue")
+        self.plot.drawTrajectory(positions1, "blue")
+        self.plot.drawRobotTrajectory(robot0, "red")
+        self.plot.drawRobotTrajectory(robot1, "red")
+        self.plot.drawRobotGraph(robot0, "yellow", 0.6)
+        self.plot.drawRobotGraph(robot1, "yellow", 0.6)
+        self.plot.drawRobotObservations(robot0, "green", 0.2)
+        self.plot.drawRobotObservations(robot1, "green", 0.2)
+        self.plot.drawRobotAngle(robot0,"orange")
+        self.plot.drawRobotAngle(robot1,"orange")
+        self.plot.show()
+
+        return True
