@@ -2,9 +2,30 @@
 This is still a work in progress. Here's an overview.
 
 Main sets up the simulator and asks the user what to do.
+
 Simulator is the bulk of the interaction. It holds the map
 and the robots and does the graph optimization.
+
 Graph is a generalized graph solver for undirected gaussian
 error graphs. It is not terribly efficient as it simply uses
 pinv to invert the sparse matrix as opposed to colamd and QR
 as is recommended in various papers.
+
+I had to finish this for a project deadline so it got really
+at the end. 
+
+To get back to where the code is manageable:
+git checkout ebe0394501f2cf0ef79b498c2398696d1de78267
+It could still use some cleanup and generalization
+
+For multi sensors:
+git checkout 717aac5296ff41b86f22a2e96fda9f05b979ed0e
+This is actually pretty generalized. We should definiely make
+some different sensor types, like a GPS simulator
+
+For multiple robots and multiple sensors:
+git checkout 549331aae4c6cbbb2f09ef6e9b3a45cfe2cb0110
+This is just a complete mess. I hacked it together
+very quickly. This is not generalized at all. Just a single
+example with two robots that share a graph. I also hacked 
+the trajectories to plot alright.
