@@ -1,24 +1,10 @@
-This doesnt work with covariance -- only with independant noise.
 
-Graph optimization:
-node values
-edge observation
-edge prediction function
-edge error function
-edge error jacobians w.r.t. each node
+This is still a work in progress. Here's an overview.
 
-
-
-TODO:
-
-graph optimization!
-    Jacobians all look good now.
-    check with spiral and short
-
-    look like maybe an issue with the landmarks not updating
-
-    look at the deltas, make sure they're updated properly
-    colamd and QR to solve
-
-record traj with robots
-multiple sensors
+Main sets up the simulator and asks the user what to do.
+Simulator is the bulk of the interaction. It holds the map
+and the robots and does the graph optimization.
+Graph is a generalized graph solver for undirected gaussian
+error graphs. It is not terribly efficient as it simply uses
+pinv to invert the sparse matrix as opposed to colamd and QR
+as is recommended in various papers.
