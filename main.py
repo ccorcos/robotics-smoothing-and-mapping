@@ -14,7 +14,7 @@ from Robot import *
 from Simulator import *
 
 # create a 10 by 10 map with 200 landmarks
-landmarkTypes = [{"type":'laser', "n": 20}]
+landmarkTypes = [{"type":'laser1', "n": 10}, {"type":'laser2', "n": 10}, {"type":'laser3', "n": 10}]
 mapScale = 10
 simMap = Map(mapScale, landmarkTypes)
 
@@ -23,11 +23,24 @@ simMap = Map(mapScale, landmarkTypes)
 # 5 degrees stdev => within 20 degrees 95% of the time
 # senseNoise = [0.01, 1 * pi / 180]  # distance, angle
 # senseNoise = [0.001, 0.1 * pi / 180]  # distance, angle
-senseNoise = [0.1, 2 * pi / 180]  # distance, angle
+senseNoise = [0.01, 1 * pi / 180]  # distance, angle
+maxAngle = pi/2. # this sensor can go 360 degrees
+maxDistance = 1 # 1 meter on a 10 by 10 map
+sensorType = "laser1"
+sensor1 = LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
+
+senseNoise = [0.5, 10 * pi / 180]  # distance, angle
 maxAngle = pi # this sensor can go 360 degrees
-maxDistance = 2 # 1 meter on a 10 by 10 map
-sensorType = "laser"
-sensor = LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
+maxDistance = 8 # 1 meter on a 10 by 10 map
+sensorType = "laser2"
+sensor2= LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
+
+senseNoise = [0.001, 0.1 * pi / 180]  # distance, angle
+maxAngle = 15.*pi/180. # this sensor can go 360 degrees
+maxDistance = 10 # 1 meter on a 10 by 10 map
+sensorType = "laser3"
+sensor3= LaserSensorSim(senseNoise, sensorType, maxDistance, maxAngle)
+
 
 
 # this robot will move like a unicycle
@@ -39,7 +52,7 @@ unicycle = UnicycleModel(motionNoise)
 
 # create the robot
 initialPosition = [5, 5, 0]  # x, y, angle
-robot = Robot( [sensor], unicycle, initialPosition)
+robot = Robot( [sensor1, sensor3], unicycle, initialPosition)
 
 sim = Simulator(simMap, [robot])
 

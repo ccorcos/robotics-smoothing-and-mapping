@@ -8,6 +8,24 @@ from matplotlib.patches import Ellipse
 # blue = real trajectory
 # red = robot, dead reckoned trajectory
 
+def colorAlpha(name):
+    cm = get_cmap('gist_rainbow')
+    if name == "laser1":
+        color = cm(1. / 3.)
+        alpha = 0.2
+        zorder = -1
+        return color, alpha, zorder
+    elif name == "laser2":
+        color = cm(2. / 3.)
+        alpha = 0.05
+        zorder = -10000000
+        return color, alpha, zorder
+    elif name == "laser3":
+        color = cm(3. / 3.)
+        alpha = 0.9
+        zorder = -1
+        return color, alpha, zorder
+
 
 class Plot:
 
@@ -36,15 +54,15 @@ class Plot:
 
     def drawMap(self, simMap):
         types = simMap.landmarkTypes
-        
-        cm = get_cmap('gist_rainbow')
+        # cm = get_cmap('gist_rainbow')
         for i in range(len(types)):
-            color = cm(1. * i / len(types))
+            # color = cm(1. * i / float(len(types)))
             landmarkType = types[i]
+            color, alpha, zorder = colorAlpha(landmarkType)
             # filter for the landmarks of this type
             landmarks = filter(lambda x: x['type'] == landmarkType, simMap.landmarks)
             # get the landmark positions
-            landmarks = map(lambda x: x['pos'], simMap.landmarks)
+            landmarks = map(lambda x: x['pos'], landmarks)
             landmarks = array(landmarks)
             self.ax.scatter(landmarks[:, 0],
                             landmarks[:, 1],
@@ -140,7 +158,7 @@ class Plot:
                              arrow[:, 1],
                              color=color,
                              alpha=alpha,
-                             zorder=-1000000)
+                             zorder=-100000000000)
 
     def drawRobotObservations(self, robot, color="red", alpha=0.5):
         edges = robot.graph.getEdgesOfType("observation")
@@ -155,10 +173,13 @@ class Plot:
 
             arrow = np.array([xy, lm])
 
+            color, alpha, zorder = colorAlpha(edge.model.sensorType)
+
             self.ax.plot(arrow[:, 0],
                          arrow[:, 1],
                          color=color,
-                         alpha=alpha)
+                         alpha=alpha,
+                         zorder=zorder)
 
             sensor = edge.model
             distErr = sensor.noise[0] * 4
@@ -169,7 +190,8 @@ class Plot:
                         height=angleErr,
                         angle=(t+a)  * 180 / pi,
                         alpha=alpha,
-                        color=color)
+                        color=color,
+                        zorder=zorder)
             self.ax.add_artist(e)
         
 
