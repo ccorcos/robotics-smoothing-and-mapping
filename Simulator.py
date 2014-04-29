@@ -469,3 +469,64 @@ class Simulator:
         self.plot.show()
 
         return True
+
+    def stepIncrementalSAM(self, robot, trajName):
+        
+        pr(0, "Step Through SAM")
+
+        commands = self.loadTrajectory(trajName)
+
+        if not commands:
+            return False
+
+        pr(1, "loaded trajectory", trajName)
+
+        pr(1, "running trajectory")
+
+        robot.reset()
+        initialPosition = robot.position()
+        
+        # the real positions of the robot
+        positions = [initialPosition]
+        pos = initialPosition
+
+        batch = 50
+
+        i = 0
+        robot.simSense(self.simMap, pos)
+        
+        for cmd in commands:
+            i = i+1
+            # move the robot. the robot updates its graph
+            robot.move(cmd)
+            # update where the robot really is due to errors
+            pos = robot.motion.simMove(pos, cmd)
+            positions.append(pos)
+            # sense
+            robot.simSense(self.simMap, pos)
+            if i == batch:
+                i = 0
+                robot.graph.optimize(0.2)
+                self.plot.new("Robot Graph")
+                self.plot.drawMap(self.simMap)
+                self.plot.drawTrajectory(positions, "blue")
+                self.plot.drawRobotTrajectory(robot, "red")
+                self.plot.drawRobotGraph(robot, "yellow", 0.8)
+                self.plot.drawRobotObservations(robot, "green", 0.2)
+                self.plot.drawRobotAngle(robot,"orange")
+                self.plot.show()
+                wait()
+
+        pr(1, "last")
+        robot.graph.optimize(0.2)
+        pr(1, "done")
+        self.plot.new("Robot Graph")
+        self.plot.drawMap(self.simMap)
+        self.plot.drawTrajectory(positions, "blue")
+        self.plot.drawRobotTrajectory(robot, "red")
+        self.plot.drawRobotGraph(robot, "yellow", 0.8)
+        self.plot.drawRobotObservations(robot, "green", 0.2)
+        self.plot.drawRobotAngle(robot,"orange")
+        self.plot.show()
+
+        return True

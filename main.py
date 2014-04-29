@@ -90,6 +90,13 @@ def stepRobotSAM():
         if not traj:
             runRobot()
 
+def stepIncrementalSAM():
+    if yesno("Would you like to step through incremental SAM?"):
+        trajName = raw_input("which trajectory: ")
+        traj = sim.stepIncrementalSAM(robot, trajName)
+        if not traj:
+            runRobot()
+
 def main():
 
     pr(0,"Chet's SAM Algorithm")
@@ -99,13 +106,14 @@ def main():
     # print sensor.jacobianLandmark([0,0,0],[1,1])
     # wait()
 
-    recordTraj()
-    stepTraj()
-    stepRobotGraph()
-    stepRobotObservations()
-    stepRobotMotion()
-    stepRobotObservationsAndMotion()
-    stepRobotSAM()
+    # recordTraj()
+    # stepTraj()
+    # stepRobotGraph()
+    # stepRobotObservations()
+    # stepRobotMotion()
+    # stepRobotObservationsAndMotion()
+    # stepRobotSAM()
+    stepIncrementalSAM()
     
     # sim.stepThroughRobotObservationsAndMotion(robot, "quick")
     # sim.stepThroughSAM(robot, "quick")

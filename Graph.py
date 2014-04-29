@@ -301,6 +301,21 @@ class Graph:
 
         return mean(abs(dx))
 
+    def optimize(self, beta):
+        maxIter = 20
+        minMean = 0.05
+        pr(1, "optimization step", 0)
+        m = self.optimizationStep(beta)    
+        pr(1, "dx mean", m)
+
+        iteration = 1
+        while iteration < maxIter and m > minMean:
+
+            pr(1, "optimization step", iteration)
+            m = self.optimizationStep(beta)    
+            pr(1, "dx mean", m) 
+            iteration = iteration + 1
+
 
 
 def emptyList(shape):
