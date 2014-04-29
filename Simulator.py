@@ -430,8 +430,6 @@ class Simulator:
         pr(2, len(robot.graph.nodes) ,"nodes")
         pr(2, len(robot.graph.edges) ,"edges")
 
-
-        wait()
         pr(1, "plotting graph")
 
         self.plot.new("Robot Graph")
@@ -445,22 +443,29 @@ class Simulator:
         
         wait()
         
-        while True:
+        beta = 0.2
+        maxIter = 20
+        minMean = 0.05
+        pr(1, "optimization step", 0)
+        m = robot.graph.optimizationStep(beta)    
+        pr(1, "dx mean", m)
 
-            pr(1, "optimization step")
+        iteration = 1
+        while iteration < maxIter and m > minMean:
 
-            robot.graph.optimizationStep()    
+            pr(1, "optimization step", iteration)
+            m = robot.graph.optimizationStep(beta)    
+            pr(1, "dx mean", m) 
+            iteration = iteration + 1
 
-            self.plot.new("Robot Graph")
-            self.plot.drawMap(self.simMap)
-            self.plot.drawTrajectory(positions, "blue")
-            self.plot.drawRobotTrajectory(robot, "red")
-            self.plot.drawRobotGraph(robot, "yellow", 0.8)
-            self.plot.drawRobotObservations(robot, "green", 0.2)
-            self.plot.drawRobotAngle(robot,"orange")
-            self.plot.show()
-
-            wait("next optimization step")
-
+        pr(1, "done")
+        self.plot.new("Robot Graph")
+        self.plot.drawMap(self.simMap)
+        self.plot.drawTrajectory(positions, "blue")
+        self.plot.drawRobotTrajectory(robot, "red")
+        self.plot.drawRobotGraph(robot, "yellow", 0.8)
+        self.plot.drawRobotObservations(robot, "green", 0.2)
+        self.plot.drawRobotAngle(robot,"orange")
+        self.plot.show()
 
         return True

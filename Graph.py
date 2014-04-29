@@ -200,7 +200,7 @@ class Graph:
         else:
             return n[0]
 
-    def optimizationStep(self):
+    def optimizationStep(self, beta):
         """
         Optimize the graph. Nodes have a value. Edges have a value, and an error
         function with respect to that value and the node values. 
@@ -291,13 +291,15 @@ class Graph:
             if node.idx != i:
                 ex("ERROR: wrong node!")
             dxi = dx[startIdx:startIdx+len(node.value)]
-            pr(2, "update node")
-            pr(3, "type", node.nodeType)
-            pr(3, "idx", node.idx)
-            pr(3, "value", node.value)
-            pr(3, "dx", dxi)
-            node.value = node.value + dxi*0.5
+            # pr(2, "update node")
+            # pr(3, "type", node.nodeType)
+            # pr(3, "idx", node.idx)
+            # pr(3, "value", node.value)
+            # pr(3, "dx", dxi)
+            node.value = node.value + dxi*beta
             startIdx = startIdx + len(node.value)
+
+        return mean(abs(dx))
 
 
 
